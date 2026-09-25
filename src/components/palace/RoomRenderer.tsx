@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import type { Vector3 } from "three";
 
 import { Locus } from "@/components/palace/Locus";
+import { HomeFloor, HomeLivingRoom } from "@/components/palace/HomeLivingRoom";
 import { Portal } from "@/components/palace/Portal";
 import { QuizStationPlaceholder } from "@/components/palace/QuizStationPlaceholder";
 import type { RoomSpec } from "@/lib/palace/types";
@@ -39,7 +40,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
       <TeleportTarget onTeleport={onTeleport}>
         <mesh rotation-x={-Math.PI / 2} receiveShadow>
           <planeGeometry args={[width, depth]} />
-          <meshStandardMaterial color={floor} roughness={0.85} />
+          {room.isHome ? <HomeFloor /> : <meshStandardMaterial color={floor} roughness={0.85} />}
         </mesh>
       </TeleportTarget>
 
@@ -70,7 +71,14 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
       {room.portals.map((p) => (
         <Portal key={p.id} portal={p} accent={accent} />
       ))}
-      {room.isHome && <QuizStationPlaceholder accent={accent} />}
+      {room.isHome && (
+        <>
+          <HomeLivingRoom />
+          <group position={[4.9, 0, 3.8]}>
+            <QuizStationPlaceholder accent={accent} />
+          </group>
+        </>
+      )}
     </group>
   );
 }
