@@ -10,13 +10,17 @@ export interface ActiveGrab {
   /** Object rotation relative to the ray orientation at grab time. */
   rotOffset: Quaternion;
   ownerId: string;
+  /** Live controller/hand pose. Desktop pointers leave this unset. */
+  handPosition?: Vector3;
+  handQuaternion?: Quaternion;
 }
 
 export const grab: {
   active: ActiveGrab | null;
   held: Object3D | null;
   belt: Object3D | null;
-} = { active: null, held: null, belt: null };
+  hoveredPortable: string | null;
+} = { active: null, held: null, belt: null, hoveredPortable: null };
 
 const FORWARD = new Vector3(0, 0, -1);
 const tmpQ = new Quaternion();
@@ -31,6 +35,8 @@ export function beginGrab(opts: {
   distance: number;
   objectQuat: Quaternion;
   ownerId: string;
+  handPosition?: Vector3;
+  handQuaternion?: Quaternion;
 }) {
   const rq = rayQuaternion(opts.ray, tmpQ);
   grab.active = {
@@ -39,6 +45,8 @@ export function beginGrab(opts: {
     distance: Math.min(1.5, Math.max(0.4, opts.distance)),
     rotOffset: rq.clone().invert().multiply(opts.objectQuat),
     ownerId: opts.ownerId,
+    handPosition: opts.handPosition?.clone(),
+    handQuaternion: opts.handQuaternion?.clone(),
   };
 }
 
