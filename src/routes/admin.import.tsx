@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { lovable } from "@/integrations/lovable";
 import {
   getLocusImportAccess,
   importLocusObjects,
@@ -61,6 +62,16 @@ function AdminImportPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  async function signIn() {
+    setError(null);
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (result.error) {
+      setError(result.error.message);
+      return;
+    }
+    if (!result.redirected) setAccess(await getLocusImportAccess());
+  }
+
   useEffect(() => {
     void getLocusImportAccess().then(setAccess).catch(() => setAccess({ signedIn: false, isAdmin: false, email: null }));
   }, []);
@@ -113,6 +124,8 @@ function AdminImportPage() {
             <LogIn className="mb-4 size-7 text-primary" />
             <h2 className="text-lg font-bold">Anmeldung erforderlich</h2>
             <p className="mt-2 text-sm text-muted-foreground">Diese Seite akzeptiert Uploads nur aus einer angemeldeten Admin-Sitzung.</p>
+            <Button className="mt-5" onClick={() => void signIn()}><LogIn />Mit Google anmelden</Button>
+            {error && <p role="alert" className="mt-4 text-sm font-medium text-destructive">{error}</p>}
           </div>
         ) : !access.isAdmin ? (
           <div className="max-w-xl border border-destructive/40 bg-card p-7 shadow-sm">
