@@ -49,7 +49,7 @@ export function HomeFloor() {
     return map;
   }, []);
 
-  return <meshStandardMaterial map={texture ?? undefined} color={PALETTE.wood} roughness={0.72} />;
+  return <meshStandardMaterial map={texture} color={PALETTE.wood} roughness={0.72} />;
 }
 
 function Sofa() {
@@ -118,14 +118,14 @@ function PersianRug() {
   return (
     <mesh position={[2.2, 0.035, -1.35]} rotation-x={-Math.PI / 2} receiveShadow>
       <planeGeometry args={[5.2, 3.3]} />
-      <meshStandardMaterial map={texture ?? undefined} color={PALETTE.rugRed} roughness={1} />
+      <meshStandardMaterial map={texture} color={PALETTE.rugRed} roughness={1} />
     </mesh>
   );
 }
 
 function Television() {
   return (
-    <group position={[2.25, 0, 2.95]} rotation-y={Math.PI}>
+    <group position={[3.35, 0, 2.55]} rotation-y={Math.PI} scale={0.82}>
       <RoundedBox args={[3.35, 0.58, 0.62]} radius={0.08} smoothness={2} position={[0, 0.35, 0]} castShadow>
         <meshStandardMaterial color={PALETTE.woodDark} roughness={0.62} />
       </RoundedBox>
