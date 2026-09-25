@@ -2,7 +2,7 @@ import { Environment, Lightformer, OrbitControls, Text } from "@react-three/drei
 import { Canvas } from "@react-three/fiber";
 import { XR, XROrigin } from "@react-three/xr";
 import { useEffect, useRef } from "react";
-import { Vector3, type Group } from "three";
+import { ACESFilmicToneMapping, Vector3, type Group } from "three";
 
 import { ThumbstickLocomotion } from "@/components/xr/ThumbstickLocomotion";
 import { ControllerActions } from "@/components/xr/ControllerActions";
@@ -69,13 +69,13 @@ function DesktopControls() {
   const inSession = useStore(xrStore, (s) => s.session != null);
   const holding = usePalaceStore((s) => s.heldLocusId != null);
   if (inSession) return null;
-  return <OrbitControls target={[0, 1.6, 0]} makeDefault enabled={!holding} />;
+  return <OrbitControls target={[3.8, 1.6, -0.8]} makeDefault enabled={!holding} />;
 }
 
 /** Single, always-mounted XR canvas for the whole app. */
 export function XRScene() {
   return (
-    <Canvas shadows camera={{ position: [0, 1.6, 5], fov: 65 }}>
+    <Canvas shadows camera={{ position: [0, 1.6, 5], fov: 65 }} onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping; gl.toneMappingExposure = 1.35; }}>
       <XR store={xrStore}>
         <SceneContent />
       </XR>
