@@ -47,10 +47,9 @@ export function InventoryBar() {
       <div className="group pointer-events-auto flex max-w-[95vw] flex-col items-center">
         <div
           id={BAR_ID}
-          className={`flex gap-1.5 overflow-x-auto overflow-y-hidden rounded-2xl border bg-card/40 p-1.5 backdrop-blur-sm transition-all duration-500 ease-in-out hover:bg-card/90 hover:p-2.5 hover:backdrop-blur-xl ${
+          className={`scrollbar-hide flex gap-1.5 overflow-x-auto overflow-y-hidden rounded-2xl border bg-card/40 p-1.5 backdrop-blur-sm transition-all duration-500 ease-in-out hover:bg-card/90 hover:p-2.5 hover:backdrop-blur-xl ${
             flash ? "border-destructive bg-destructive/30" : over ? "border-primary ring-2 ring-primary/20" : "border-border shadow-lg"
           }`}
-          style={{ scrollbarWidth: 'none' }}
         >
           {Array.from({ length: INVENTORY_SLOTS }, (_, i) => {
             const id = inventory[i];
@@ -77,7 +76,7 @@ export function InventoryBar() {
                       className="h-4 w-4 rounded-full transition-all duration-300 group-hover:h-6 group-hover:w-6"
                       style={{ background: spec.primitive.color }}
                     />
-                    <span className="hidden max-w-full truncate px-1 text-[10px] leading-tight text-card-foreground group-hover:block">
+                    <span className="hidden max-w-full truncate px-1 text-[10px] font-medium leading-tight text-card-foreground group-hover:block">
                       {spec.label}
                     </span>
                   </>

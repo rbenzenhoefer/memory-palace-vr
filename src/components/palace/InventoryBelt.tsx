@@ -7,8 +7,8 @@ import { LocusVisual } from "@/components/palace/LocusVisual";
 import { beginGrab, grab, heldOverBelt, releaseHeld } from "@/lib/palace/grab";
 import { INVENTORY_SLOTS, usePalaceStore } from "@/state/palaceStore";
 
-const RADIUS = 0.42;
-const SPREAD = 0.95; // radians across the arc
+const RADIUS = 0.45;
+const SPREAD = 1.3; // radians across the arc
 const OWNER = "belt";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,7 +76,7 @@ function Slot({ index, locusId }: { index: number; locusId: string | undefined }
   );
 }
 
-/** VR inventory: 6 slots in an arc at hip height, attached to the XROrigin. */
+/** VR inventory: slots in an arc at hip height, attached to the XROrigin. */
 export function InventoryBelt() {
   const inventory = usePalaceStore((s) => s.inventory);
   const ref = useRef<Group>(null);
@@ -88,7 +88,7 @@ export function InventoryBelt() {
   }, []);
 
   return (
-    <group ref={ref} position={[0.12, 0.9, -0.35]} rotation-x={-0.9}>
+    <group ref={ref} position={[0.12, 0.75, -0.35]} rotation-x={-0.6}>
       {Array.from({ length: INVENTORY_SLOTS }, (_, i) => {
         const a = -SPREAD / 2 + (SPREAD * i) / (INVENTORY_SLOTS - 1);
         return (
