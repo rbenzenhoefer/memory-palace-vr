@@ -8,6 +8,7 @@ import { Locus, PEDESTAL_H, Pedestal } from "@/components/palace/Locus";
 import { HomeFloor, HomeLivingRoom } from "@/components/palace/HomeLivingRoom";
 import { Portal } from "@/components/palace/Portal";
 import { QuizStationPlaceholder } from "@/components/palace/QuizStationPlaceholder";
+import { ScannedRoom } from "@/components/palace/ScannedRoom";
 import { TutorialRoom } from "@/components/palace/TutorialRoom";
 import {
   WarehouseCeilingMaterial,
@@ -66,6 +67,8 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
   const sky = room.theme.skyColor ?? "#12141a";
   const isWarehouse = room.slug === "warehouse";
   const isTutorial = room.slug === "tutorial";
+  const scanUrl = (room.theme as Record<string, unknown>)["scanUrl"] as string | undefined;
+  const isScan = !!scanUrl;
 
   // Click-to-place when an object is in hand without an active drag (desktop inventory, after portals).
   const onSurfaceClick = (e: ThreeEvent<MouseEvent>) => {
@@ -88,10 +91,13 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
       <fog attach="fog" args={[sky, 15, 45]} />
       <ambientLight intensity={room.isHome ? 0.2 : isWarehouse ? 0.48 : 0.35} />
       <hemisphereLight args={[wall, floor, room.isHome ? 0.25 : isWarehouse ? 0.85 : 0.6]} />
-      {!isWarehouse && !room.isHome && (
+      {!isWarehouse && !room.isHome && !isScan && (
         <pointLight position={[0, height - 0.5, 0]} intensity={12} distance={20} color={accent} />
       )}
 
+      {isScan ? (
+        <ScannedRoom url={scanUrl} width={width} depth={depth} onTeleport={onTeleport} onSurfaceClick={onSurfaceClick} />
+      ) : (<>
       <TeleportTarget onTeleport={onTeleport}>
         <mesh
           rotation-x={-Math.PI / 2}
@@ -130,6 +136,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
       >
         {room.title}
       </Text>}
+      </>)}
 
       {room.loci.map((l) =>
         l.isPortable ? (
