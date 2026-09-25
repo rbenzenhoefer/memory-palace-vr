@@ -12,15 +12,8 @@ export function ControllerActions() {
     const locus = grab.hoveredPortable;
     if (!locus) return;
     const store = usePalaceStore.getState();
-    const id = locus.id;
-    if (store.heldLocusId === id) {
-      store.stow(id);
-      grab.active = null;
-      return;
-    }
-    if (!store.pickUp(locus)) return;
-    store.stow(id);
-    grab.active = null;
+    if (!store.stowDirect(locus)) return;
+    if (grab.active?.ownerId === locus.id) grab.active = null;
   });
 
   return null;

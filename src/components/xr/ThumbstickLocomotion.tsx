@@ -22,7 +22,6 @@ const next = new Vector3();
 const pivotOffset = new Vector3();
 const rotationAxis = new Vector3();
 const rotationDelta = new Quaternion();
-const headQuaternion = new Quaternion();
 const UP = new Vector3(0, 1, 0);
 
 function deadzoned(value: number, zone: number) {
