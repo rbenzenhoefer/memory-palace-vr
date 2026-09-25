@@ -1,6 +1,9 @@
 - [x] Rework the home room architecture and furniture for Golden Hour.
 - [x] Add textured surfaces and a photographic landscape.
 - [x] Preserve portals, VR controls, and the other room; check desktop and mobile rendering.
+- [x] Rework the Neurobio room as a polished biology laboratory.
+- [x] Preserve learning objects, portals, inventory, teleportation, and locomotion.
+- [x] Verify the laboratory on desktop and mobile.
 - [x] Add the data-driven tutorial room and living-room portal.
 - [x] Add the central session-only tutorial state machine.
 - [x] Connect real Locus click and placement actions to tutorial progress.

@@ -13,4 +13,5 @@
 - Import writes require an authenticated `admin` row in `user_roles`, because public clients may only read learning objects and models.
 
 - Keep the Golden Hour home interior's architectural furnishings, window landscape, and material textures scoped to `HomeLivingRoom`; the shared room renderer and single XR canvas must preserve all other rooms and interactions.
+- Keep the biology-labor architecture, furnishings, and lighting scoped to `NeuroLabRoom`; this preserves the shared renderer and every other palace room.
 - Tutorial progress is session-only and centrally managed; real Locus click/drop events advance it so 3D interactions remain the source of truth.
