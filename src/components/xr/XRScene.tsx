@@ -2,7 +2,9 @@ import { Environment, Lightformer, OrbitControls, Text } from "@react-three/drei
 import { Canvas } from "@react-three/fiber";
 import { XR, XROrigin } from "@react-three/xr";
 import { useEffect, useRef } from "react";
-import { Vector3 } from "three";
+import { Vector3, type Group } from "three";
+
+import { ThumbstickLocomotion } from "@/components/xr/ThumbstickLocomotion";
 import { useStore } from "zustand";
 
 import { RoomRenderer } from "@/components/palace/RoomRenderer";
@@ -41,13 +43,15 @@ function CurrentRoom() {
 function SceneContent() {
   const playerPosition = usePalaceStore((s) => s.playerPosition);
   const inSession = useStore(xrStore, (s) => s.session != null);
+  const originRef = useRef<Group>(null);
   return (
     <>
       <Environment>
         <Lightformer intensity={1.2} position={[0, 5, 0]} scale={[10, 10, 1]} />
         <Lightformer intensity={0.6} color="#8bb" position={[-5, 1, -1]} rotation-y={Math.PI / 2} scale={[20, 1, 1]} />
       </Environment>
-      <XROrigin position={playerPosition}>{inSession && <InventoryBelt />}</XROrigin>
+      <XROrigin ref={originRef} position={playerPosition}>{inSession && <InventoryBelt />}</XROrigin>
+      {inSession && <ThumbstickLocomotion originRef={originRef} />}
       <CurrentRoom />
       <HeldObject />
       <ScreenFade />
