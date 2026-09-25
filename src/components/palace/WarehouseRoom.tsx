@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 
 import { ShelfRack } from "@/components/palace/ShelfRack";
+import { useLocusObjects } from "@/hooks/useLocusObjects";
 
 const WAREHOUSE = {
   concrete: "#727678",
@@ -90,6 +91,7 @@ function CeilingFixture({ x, z }: { x: number; z: number }) {
 
 /** Fixed architectural details for the intentionally empty warehouse room. */
 export function WarehouseRoom() {
+  const { data: shelfObjects = [] } = useLocusObjects("neuro");
   return (
     <group>
       {[-3.5, 0, 3.5].flatMap((z) =>
@@ -107,6 +109,7 @@ export function WarehouseRoom() {
           rackIndex={rackIndex}
           position={[3.64, 0, z]}
           rotation={[0, -Math.PI / 2, 0]}
+          objects={shelfObjects}
         />
       ))}
 

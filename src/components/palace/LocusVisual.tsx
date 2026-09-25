@@ -8,7 +8,7 @@ import type { LocusSpec, PrimitiveSpec } from "@/lib/palace/types";
 
 export const OBJECT_SIZE = 0.5; // primitive fallback size (m)
 
-function GltfModel({ url, size }: { url: string; size: number }) {
+export function GltfModel({ url, size }: { url: string; size: number }) {
   const { scene } = useGLTF(url);
   const { object, factor } = useMemo(() => {
     const clone = scene.clone(true);
