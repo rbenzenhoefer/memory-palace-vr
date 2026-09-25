@@ -13,6 +13,22 @@ import type {
   Vec3,
 } from "./types";
 
+export interface LocusObjectManifestEntry {
+  id: number;
+  question: string;
+  answer: string;
+  locus: string;
+  file: string;
+  triangles: number;
+}
+
+export interface LocusObjectImportResult {
+  cardIndex: number;
+  file: string;
+  ok: boolean;
+  message: string;
+}
+
 const toVec3 = (v: unknown): Vec3 =>
   Array.isArray(v) && v.length === 3 ? [Number(v[0]), Number(v[1]), Number(v[2])] : [0, 0, 0];
 
@@ -111,4 +127,70 @@ export async function fetchRooms(): Promise<RoomSummary[]> {
     description: r.description,
     isHome: r.is_home,
   }));
+}
+
+export async function getLocusImportAccess(): Promise<{
+  signedIn: boolean;
+  isAdmin: boolean;
+  email: string | null;
+}> {
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+  if (!user) return { signedIn: false, isAdmin: false, email: null };
+
+  const { data: role } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  return { signedIn: true, isAdmin: !!role, email: user.email ?? null };
+}
+
+export async function importLocusObjects(
+  manifest: LocusObjectManifestEntry[],
+  files: File[],
+): Promise<LocusObjectImportResult[]> {
+  const filesByName = new Map(files.map((file) => [file.name, file]));
+  const results: LocusObjectImportResult[] = [];
+
+  for (const entry of manifest) {
+    const file = filesByName.get(entry.file);
+    if (!file) {
+      results.push({ cardIndex: entry.id, file: entry.file, ok: false, message: "GLB-Datei fehlt" });
+      continue;
+    }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `neuro/${entry.id}-${Date.now()}-${safeName}`;
+    const { error: uploadError } = await supabase.storage
+      .from("locus-objects")
+      .upload(path, file, { contentType: "model/gltf-binary", upsert: false });
+
+    if (uploadError) {
+      results.push({ cardIndex: entry.id, file: entry.file, ok: false, message: uploadError.message });
+      continue;
+    }
+
+    const { error: insertError } = await supabase.from("locus_objects").insert({
+      card_index: entry.id,
+      question: entry.question,
+      answer: entry.answer,
+      locus_slug: entry.locus,
+      glb_path: path,
+      room: "neuro",
+      slot_index: entry.id - 1,
+    });
+
+    if (insertError) {
+      await supabase.storage.from("locus-objects").remove([path]);
+      results.push({ cardIndex: entry.id, file: entry.file, ok: false, message: insertError.message });
+      continue;
+    }
+
+    results.push({ cardIndex: entry.id, file: entry.file, ok: true, message: "Importiert" });
+  }
+
+  return results;
 }
