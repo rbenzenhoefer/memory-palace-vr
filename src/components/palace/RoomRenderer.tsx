@@ -84,9 +84,9 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
     <group>
       <color attach="background" args={[sky]} />
       <fog attach="fog" args={[sky, 15, 45]} />
-      <ambientLight intensity={isWarehouse ? 0.48 : 0.35} />
-      <hemisphereLight args={[wall, floor, isWarehouse ? 0.85 : 0.6]} />
-      {!isWarehouse && (
+      <ambientLight intensity={room.isHome ? 0.2 : isWarehouse ? 0.48 : 0.35} />
+      <hemisphereLight args={[wall, floor, room.isHome ? 0.25 : isWarehouse ? 0.85 : 0.6]} />
+      {!isWarehouse && !room.isHome && (
         <pointLight position={[0, height - 0.5, 0]} intensity={12} distance={20} color={accent} />
       )}
 
@@ -119,7 +119,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
         {isWarehouse ? <WarehouseCeilingMaterial /> : <meshStandardMaterial color={wall} roughness={0.95} />}
       </mesh>
 
-      <Text
+      {!room.isHome && <Text
         position={[0, height * 0.72, -depth / 2 + 0.02]}
         fontSize={Math.min(0.7, width / 12)}
         color={accent}
@@ -127,7 +127,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
         textAlign="center"
       >
         {room.title}
-      </Text>
+      </Text>}
 
       {room.loci.map((l) =>
         l.isPortable ? (

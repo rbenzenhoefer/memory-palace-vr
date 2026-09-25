@@ -11,3 +11,5 @@
 
 - Palace destinations are data-driven rooms inside the single persistent XR Canvas, because browser-route changes would interrupt active VR sessions.
 - Import writes require an authenticated `admin` row in `user_roles`, because public clients may only read learning objects and models.
+
+- Keep the Golden Hour home interior's architectural furnishings, window landscape, and material textures scoped to `HomeLivingRoom`; the shared room renderer and single XR canvas must preserve all other rooms and interactions.
