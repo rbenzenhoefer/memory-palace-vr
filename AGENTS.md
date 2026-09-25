@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Palace destinations are data-driven rooms inside the single persistent XR Canvas, because browser-route changes would interrupt active VR sessions.

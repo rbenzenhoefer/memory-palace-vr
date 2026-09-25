@@ -8,6 +8,12 @@ import { Locus, PEDESTAL_H, Pedestal } from "@/components/palace/Locus";
 import { HomeFloor, HomeLivingRoom } from "@/components/palace/HomeLivingRoom";
 import { Portal } from "@/components/palace/Portal";
 import { QuizStationPlaceholder } from "@/components/palace/QuizStationPlaceholder";
+import {
+  WarehouseCeilingMaterial,
+  WarehouseFloor,
+  WarehouseRoom,
+  WarehouseWallMaterial,
+} from "@/components/palace/WarehouseRoom";
 import { grab } from "@/lib/palace/grab";
 import type { LocusSpec, RoomSpec, Vec3 } from "@/lib/palace/types";
 import { usePalaceStore } from "@/state/palaceStore";
@@ -57,6 +63,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
   const wall = room.theme.wallColor ?? "#cfc8b8";
   const accent = room.theme.accentColor ?? "#c9a227";
   const sky = room.theme.skyColor ?? "#12141a";
+  const isWarehouse = room.slug === "warehouse";
 
   // Click-to-place when an object is in hand without an active drag (desktop inventory, after portals).
   const onSurfaceClick = (e: ThreeEvent<MouseEvent>) => {
@@ -77,9 +84,11 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
     <group>
       <color attach="background" args={[sky]} />
       <fog attach="fog" args={[sky, 15, 45]} />
-      <ambientLight intensity={0.35} />
-      <hemisphereLight args={[wall, floor, 0.6]} />
-      <pointLight position={[0, height - 0.5, 0]} intensity={12} distance={20} color={accent} />
+      <ambientLight intensity={isWarehouse ? 0.48 : 0.35} />
+      <hemisphereLight args={[wall, floor, isWarehouse ? 0.85 : 0.6]} />
+      {!isWarehouse && (
+        <pointLight position={[0, height - 0.5, 0]} intensity={12} distance={20} color={accent} />
+      )}
 
       <TeleportTarget onTeleport={onTeleport}>
         <mesh
@@ -89,19 +98,25 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
           onClick={onSurfaceClick}
         >
           <planeGeometry args={[width, depth]} />
-          {room.isHome ? <HomeFloor /> : <meshStandardMaterial color={floor} roughness={0.85} />}
+          {room.isHome ? (
+            <HomeFloor />
+          ) : isWarehouse ? (
+            <WarehouseFloor />
+          ) : (
+            <meshStandardMaterial color={floor} roughness={0.85} />
+          )}
         </mesh>
       </TeleportTarget>
 
       {walls.map((w, i) => (
         <mesh key={i} position={w.pos} rotation-y={w.rotY} receiveShadow>
           <planeGeometry args={[w.w, height]} />
-          <meshStandardMaterial color={wall} roughness={0.9} />
+          {isWarehouse ? <WarehouseWallMaterial /> : <meshStandardMaterial color={wall} roughness={0.9} />}
         </mesh>
       ))}
       <mesh position-y={height} rotation-x={Math.PI / 2}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={wall} roughness={0.95} />
+        {isWarehouse ? <WarehouseCeilingMaterial /> : <meshStandardMaterial color={wall} roughness={0.95} />}
       </mesh>
 
       <Text
@@ -144,6 +159,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
           </group>
         </>
       )}
+      {isWarehouse && <WarehouseRoom />}
     </group>
   );
 }
