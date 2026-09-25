@@ -14,7 +14,212 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assets: {
+        Row: {
+          created_at: string | null
+          default_scale: number
+          id: string
+          meshy_task_id: string | null
+          name: string
+          prompt: string | null
+          source: string
+          status: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          default_scale?: number
+          id?: string
+          meshy_task_id?: string | null
+          name: string
+          prompt?: string | null
+          source?: string
+          status?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          default_scale?: number
+          id?: string
+          meshy_task_id?: string | null
+          name?: string
+          prompt?: string | null
+          source?: string
+          status?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      cards: {
+        Row: {
+          back: string
+          created_at: string | null
+          external_id: string | null
+          extra: string | null
+          front: string
+          id: string
+          locus_id: string
+          source: string
+        }
+        Insert: {
+          back: string
+          created_at?: string | null
+          external_id?: string | null
+          extra?: string | null
+          front: string
+          id?: string
+          locus_id: string
+          source?: string
+        }
+        Update: {
+          back?: string
+          created_at?: string | null
+          external_id?: string | null
+          extra?: string | null
+          front?: string
+          id?: string
+          locus_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_locus_id_fkey"
+            columns: ["locus_id"]
+            isOneToOne: false
+            referencedRelation: "loci"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loci: {
+        Row: {
+          asset_id: string | null
+          id: string
+          label: string
+          order_index: number
+          position: Json
+          primitive: Json
+          room_id: string
+          rotation: Json
+          scale: number
+        }
+        Insert: {
+          asset_id?: string | null
+          id?: string
+          label: string
+          order_index?: number
+          position?: Json
+          primitive?: Json
+          room_id: string
+          rotation?: Json
+          scale?: number
+        }
+        Update: {
+          asset_id?: string | null
+          id?: string
+          label?: string
+          order_index?: number
+          position?: Json
+          primitive?: Json
+          room_id?: string
+          rotation?: Json
+          scale?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loci_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loci_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portals: {
+        Row: {
+          from_room_id: string
+          id: string
+          label: string | null
+          position: Json
+          rotation: Json
+          to_room_id: string
+        }
+        Insert: {
+          from_room_id: string
+          id?: string
+          label?: string | null
+          position?: Json
+          rotation?: Json
+          to_room_id: string
+        }
+        Update: {
+          from_room_id?: string
+          id?: string
+          label?: string | null
+          position?: Json
+          rotation?: Json
+          to_room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portals_from_room_id_fkey"
+            columns: ["from_room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portals_to_room_id_fkey"
+            columns: ["to_room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_home: boolean
+          layout: Json
+          slug: string
+          source: string
+          theme: Json
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_home?: boolean
+          layout?: Json
+          slug: string
+          source?: string
+          theme?: Json
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_home?: boolean
+          layout?: Json
+          slug?: string
+          source?: string
+          theme?: Json
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
