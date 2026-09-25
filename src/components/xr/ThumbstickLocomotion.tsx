@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { useXRInputSourceState } from "@react-three/xr";
-import { useRef, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { MathUtils, Quaternion, Vector3, type Group } from "three";
 
 import { useRoom } from "@/hooks/useRoom";
@@ -46,6 +46,11 @@ export function ThumbstickLocomotion({ originRef }: { originRef: RefObject<Group
   const { data: room } = useRoom(slug);
   const pitch = useRef(0);
   const motion = useRef({ yawSpeed: 0, pitchSpeed: 0, dirty: false });
+
+  useEffect(() => {
+    pitch.current = 0;
+    motion.current = { yawSpeed: 0, pitchSpeed: 0, dirty: false };
+  }, [slug]);
 
   useFrame((state, rawDelta) => {
     const origin = originRef.current;

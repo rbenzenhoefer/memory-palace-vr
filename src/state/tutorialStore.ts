@@ -118,7 +118,7 @@ export const useTutorialStore = create<TutorialState>((set, get) => ({
       set({ feedback: `Platziere zuerst ${expected.label} im leuchtenden Kreis.` });
       return;
     }
-    if (Math.hypot(position[0] - target[0], position[2] - target[2]) > 0.95) {
+    if (Math.hypot(position[0] - target[0], position[2] - target[2]) > 1.35) {
       set({ feedback: "Lege das Objekt in den leuchtenden Zielkreis." });
       return;
     }

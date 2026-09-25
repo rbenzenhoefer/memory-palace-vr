@@ -65,7 +65,7 @@ export function heldOverBelt() {
   if (!grab.held || !grab.belt) return false;
   const a = grab.held.getWorldPosition(new Vector3());
   const b = grab.belt.getWorldPosition(new Vector3());
-  return a.distanceTo(b) < 0.28;
+  return a.distanceTo(b) < 0.4;
 }
 
 const raycaster = new Raycaster();

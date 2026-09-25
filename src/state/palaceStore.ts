@@ -4,7 +4,7 @@ import { create } from "zustand";
 import type { LocusSpec, Vec3 } from "@/lib/palace/types";
 import { useTutorialStore } from "@/state/tutorialStore";
 
-export const INVENTORY_SLOTS = 6;
+export const INVENTORY_SLOTS = 10;
 
 export interface Placement {
   roomSlug: string;

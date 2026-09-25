@@ -1,8 +1,8 @@
 import { Text } from "@react-three/drei";
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
-import { Vector3, type MeshBasicMaterial } from "three";
+import { useCallback, useRef } from "react";
+import { Vector3, type Group, type MeshBasicMaterial } from "three";
 
 import { roomQueryOptions } from "@/hooks/useRoom";
 import type { PortalSpec } from "@/lib/palace/types";
@@ -18,16 +18,12 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export function Portal({ portal, accent }: { portal: PortalSpec; accent: string }) {
   const queryClient = useQueryClient();
   const matRef = useRef<MeshBasicMaterial>(null);
+  const portalRef = useRef<Group>(null);
   const busy = useRef(false);
+  const camera = useThree((state) => state.camera);
+  const localHead = useRef(new Vector3());
 
-  useFrame(({ clock }) => {
-    if (matRef.current) {
-      matRef.current.opacity = 0.45 + Math.sin(clock.elapsedTime * 2.2) * 0.15;
-    }
-  });
-
-  const onClick = async (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation();
+  const activate = useCallback(async () => {
     if (busy.current) return;
     busy.current = true;
     const { setFadeTarget, goToRoom, setPlayerPosition } = usePalaceStore.getState();
@@ -37,16 +33,38 @@ export function Portal({ portal, accent }: { portal: PortalSpec; accent: string 
       queryClient.fetchQuery(roomQueryOptions(slug)).catch(() => null),
       wait(FADE_MS),
     ]);
-    goToRoom(slug);
     const spawn = target?.layout.spawn ?? [0, 0, 0];
     setPlayerPosition(new Vector3(...spawn));
+    goToRoom(slug);
     await wait(80);
     setFadeTarget(0);
-    busy.current = false;
+  }, [portal.toRoom.slug, queryClient]);
+
+  useFrame(({ clock }) => {
+    if (matRef.current) {
+      matRef.current.opacity = 0.45 + Math.sin(clock.elapsedTime * 2.2) * 0.15;
+    }
+    const frame = portalRef.current;
+    if (!frame || busy.current) return;
+    camera.getWorldPosition(localHead.current);
+    frame.worldToLocal(localHead.current);
+    if (
+      Math.abs(localHead.current.x) < W * 0.48 &&
+      localHead.current.y > 0.35 &&
+      localHead.current.y < H + 0.25 &&
+      Math.abs(localHead.current.z) < 0.42
+    ) {
+      void activate();
+    }
+  });
+
+  const onClick = async (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    await activate();
   };
 
   return (
-    <group position={portal.position} rotation={portal.rotation}>
+    <group ref={portalRef} position={portal.position} rotation={portal.rotation}>
       <group onClick={onClick}>
         {/* posts + lintel */}
         {[-1, 1].map((s) => (

@@ -7,8 +7,8 @@ import { LocusVisual } from "@/components/palace/LocusVisual";
 import { beginGrab, grab, heldOverBelt, releaseHeld } from "@/lib/palace/grab";
 import { INVENTORY_SLOTS, usePalaceStore } from "@/state/palaceStore";
 
-const RADIUS = 0.42;
-const SPREAD = 0.95; // radians across the arc
+const RADIUS = 0.52;
+const SPREAD = 1.18; // radians across the arc
 const OWNER = "belt";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,20 +54,20 @@ function Slot({ index, locusId }: { index: number; locusId: string | undefined }
 
   return (
     <group onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}>
-      <mesh>
-        <circleGeometry args={[0.05, 32]} />
-        <meshBasicMaterial transparent opacity={0.08} color="#000" depthWrite={false} />
+      <mesh scale={[1.45, 1, 1]}>
+        <planeGeometry args={[0.092, 0.092]} />
+        <meshBasicMaterial transparent opacity={0.42} color="#17191f" depthWrite={false} />
       </mesh>
       <mesh position-z={0.001}>
-        <ringGeometry args={[0.044, 0.05, 40]} />
+        <planeGeometry args={[0.125, 0.094]} />
         <meshBasicMaterial ref={matRef} transparent color="#f3e7d3" depthWrite={false} />
       </mesh>
       {spec && (
         <>
-          <group ref={spin} position={[0, -0.03, 0.03]} rotation-x={Math.PI / 2}>
+          <group ref={spin} position={[0, 0.004, 0.03]} rotation-x={Math.PI / 2}>
             <LocusVisual locus={spec} size={0.06} />
           </group>
-          <Text position={[0, -0.065, 0.002]} fontSize={0.012} color="#f3e7d3" maxWidth={0.1} textAlign="center">
+          <Text position={[0, -0.067, 0.004]} fontSize={0.012} color="#f3e7d3" maxWidth={0.112} textAlign="center">
             {spec.label}
           </Text>
         </>
@@ -76,7 +76,7 @@ function Slot({ index, locusId }: { index: number; locusId: string | undefined }
   );
 }
 
-/** VR inventory: 6 slots in an arc at hip height, attached to the XROrigin. */
+/** VR inventory: slots in an arc at hip height, attached to the XROrigin. */
 export function InventoryBelt() {
   const inventory = usePalaceStore((s) => s.inventory);
   const ref = useRef<Group>(null);
@@ -88,7 +88,7 @@ export function InventoryBelt() {
   }, []);
 
   return (
-    <group ref={ref} position={[0.12, 0.9, -0.35]} rotation-x={-0.9}>
+    <group ref={ref} position={[0.08, 0.48, -0.42]} rotation-x={-0.38}>
       {Array.from({ length: INVENTORY_SLOTS }, (_, i) => {
         const a = -SPREAD / 2 + (SPREAD * i) / (INVENTORY_SLOTS - 1);
         return (

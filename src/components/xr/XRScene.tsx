@@ -1,5 +1,5 @@
 import { Environment, Lightformer, OrbitControls, Text } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { XR, XROrigin } from "@react-three/xr";
 import { useEffect, useRef } from "react";
 import { ACESFilmicToneMapping, Vector3, type Group } from "three";
@@ -43,8 +43,31 @@ function CurrentRoom() {
 
 function SceneContent() {
   const playerPosition = usePalaceStore((s) => s.playerPosition);
+  const roomSlug = usePalaceStore((s) => s.currentRoomSlug);
   const inSession = useStore(xrStore, (s) => s.session != null);
   const originRef = useRef<Group>(null);
+  const calibrationFrames = useRef(0);
+  const head = useRef(new Vector3());
+
+  useEffect(() => {
+    const origin = originRef.current;
+    if (!origin) return;
+    origin.position.copy(usePalaceStore.getState().playerPosition);
+    origin.quaternion.identity();
+    calibrationFrames.current = 0;
+  }, [roomSlug]);
+
+  useFrame(({ camera }) => {
+    const origin = originRef.current;
+    if (!origin || !inSession || calibrationFrames.current > 8) return;
+    calibrationFrames.current += 1;
+    if (calibrationFrames.current !== 8) return;
+    camera.getWorldPosition(head.current);
+    if (head.current.y < 1.55) {
+      origin.position.y += 1.65 - head.current.y;
+      usePalaceStore.getState().setPlayerPosition(origin.position);
+    }
+  });
   return (
     <>
       <Environment>
@@ -70,14 +93,14 @@ function DesktopControls() {
   const holding = usePalaceStore((s) => s.heldLocusId != null);
   const roomSlug = usePalaceStore((s) => s.currentRoomSlug);
   if (inSession) return null;
-  const target: [number, number, number] = roomSlug === "tutorial" ? [0, 1.6, 0] : [3.8, 1.6, -0.8];
+  const target: [number, number, number] = roomSlug === "home" ? [1.5, 1.45, -1.5] : [0, 1.45, 0];
   return <OrbitControls target={target} makeDefault enabled={!holding} />;
 }
 
 /** Single, always-mounted XR canvas for the whole app. */
 export function XRScene() {
   return (
-    <Canvas shadows camera={{ position: [0, 1.6, 5], fov: 65 }} onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping; gl.toneMappingExposure = 1.35; }}>
+    <Canvas shadows camera={{ position: [0, 1.75, 5], fov: 65 }} onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping; gl.toneMappingExposure = 1.35; }}>
       <XR store={xrStore}>
         <SceneContent />
       </XR>

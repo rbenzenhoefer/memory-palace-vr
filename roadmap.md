@@ -7,3 +7,7 @@
 - [x] Add immersive guide cards, target markers, route visualization, and completion flow.
 - [x] Verify the full state flow and existing preview stability.
 - [x] Add the tutorial room, portals, and learning objects to the shared live data for draft testing.
+- [x] Raise the natural viewpoint and keep the XR view level across room changes.
+- [x] Restore the visible tutorial guide and progression.
+- [x] Move the VR inventory lower and add an expanded scrollable view.
+- [x] Trigger room changes when the player walks through a portal.
