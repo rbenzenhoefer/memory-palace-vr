@@ -1,6 +1,6 @@
 import { Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { XR, XROrigin, useXRStore } from "@react-three/xr";
+import { XR, XROrigin } from "@react-three/xr";
 import { useStore } from "zustand";
 
 import { Floor } from "@/components/xr/Floor";
@@ -58,5 +58,3 @@ export function XRScene() {
     </Canvas>
   );
 }
-
-export { useXRStore };
