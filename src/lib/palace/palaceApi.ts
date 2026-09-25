@@ -19,7 +19,7 @@ const toVec3 = (v: unknown): Vec3 =>
 const ROOM_SELECT = `
   id, slug, title, description, is_home, theme, layout,
   loci (
-    id, order_index, label, position, rotation, scale, primitive,
+    id, order_index, label, position, rotation, scale, primitive, is_portable,
     asset:assets ( id, name, url, status, default_scale ),
     cards ( id, front, back, extra, source, external_id )
   ),
@@ -51,6 +51,7 @@ export async function fetchRoom(slug: string): Promise<RoomSpec> {
       rotation: toVec3(l.rotation),
       scale: l.scale,
       primitive: l.primitive as PrimitiveSpec,
+      isPortable: !!l.is_portable,
       asset: l.asset
         ? {
             id: l.asset.id,

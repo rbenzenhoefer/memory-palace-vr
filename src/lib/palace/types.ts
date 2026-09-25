@@ -49,6 +49,7 @@ export interface LocusSpec {
   rotation: Vec3;
   scale: number;
   primitive: PrimitiveSpec;
+  isPortable: boolean;
   asset: AssetSpec | null;
   cards: CardSpec[];
 }
