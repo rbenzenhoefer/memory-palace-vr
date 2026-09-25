@@ -29,7 +29,14 @@ export function Pedestal({ position, rotation }: { position: Vec3; rotation: Vec
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyPointerEvent = ThreeEvent<PointerEvent> & { ray?: Ray; target: any; nativeEvent: any };
+type AnyPointerEvent = ThreeEvent<PointerEvent> & {
+  ray?: Ray;
+  target: any;
+  nativeEvent: any;
+  pointerType?: string;
+  pointerPosition?: Vector3;
+  pointerQuaternion?: Quaternion;
+};
 
 /**
  * A memory object. With `withPedestal`, `position` is the floor point and a pedestal is drawn;
@@ -62,6 +69,7 @@ export function Locus({
   useEffect(
     () => () => {
       if (grab.active?.ownerId === locus.id) grab.active = null;
+      if (grab.hoveredPortable?.id === locus.id) grab.hoveredPortable = null;
     },
     [locus.id],
   );
@@ -83,11 +91,20 @@ export function Locus({
   const rayOf = (e: AnyPointerEvent) =>
     e.ray ?? new Ray(camera.position.clone(), e.point.clone().sub(camera.position).normalize());
 
-  const startGrab = (pointerId: number, ray: Ray, point: Vector3) => {
+  const startGrab = (pointerId: number, ray: Ray, point: Vector3, e?: AnyPointerEvent) => {
     if (!objRef.current) return;
     const quat = objRef.current.getWorldQuaternion(new Quaternion());
     if (!usePalaceStore.getState().pickUp(locus)) return;
-    beginGrab({ pointerId, ray, distance: ray.origin.distanceTo(point), objectQuat: quat, ownerId: locus.id });
+    const isXR = e?.pointerType !== undefined && e.pointerType !== "mouse";
+    beginGrab({
+      pointerId,
+      ray,
+      distance: ray.origin.distanceTo(point),
+      objectQuat: quat,
+      ownerId: locus.id,
+      handPosition: isXR ? e.pointerPosition : undefined,
+      handQuaternion: isXR ? e.pointerQuaternion : undefined,
+    });
     setOpen(false);
     setHovered(false);
   };
@@ -99,7 +116,7 @@ export function Locus({
     const point = e.point.clone();
     const pointerId = e.pointerId;
     const timer = window.setTimeout(() => {
-      if (press.current) startGrab(pointerId, press.current.ray, press.current.point);
+      if (press.current) startGrab(pointerId, press.current.ray, press.current.point, e);
     }, CLICK_MS);
     press.current = { t: performance.now(), ray, point, timer };
   };
@@ -108,6 +125,8 @@ export function Locus({
     const active = grab.active;
     if (active && active.ownerId === locus.id && active.pointerId === e.pointerId) {
       active.ray.copy(rayOf(e));
+      if (e.pointerPosition) active.handPosition?.copy(e.pointerPosition);
+      if (e.pointerQuaternion) active.handQuaternion?.copy(e.pointerQuaternion);
       return;
     }
     const p = press.current;
@@ -115,7 +134,7 @@ export function Locus({
       const moved = rayOf(e).direction.angleTo(p.ray.direction) > 0.03;
       if (moved) {
         window.clearTimeout(p.timer);
-        startGrab(e.pointerId, p.ray, p.point);
+        startGrab(e.pointerId, p.ray, p.point, e);
         if (grab.active) grab.active.ray.copy(rayOf(e));
       }
     }
@@ -148,8 +167,12 @@ export function Locus({
         onPointerOver: (e: ThreeEvent<PointerEvent>) => {
           e.stopPropagation();
           setHovered(true);
+          grab.hoveredPortable = locus;
         },
-        onPointerOut: () => setHovered(false),
+        onPointerOut: () => {
+          setHovered(false);
+          if (grab.hoveredPortable?.id === locus.id) grab.hoveredPortable = null;
+        },
       }
     : { onClick: onClickStatic };
 

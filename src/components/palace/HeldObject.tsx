@@ -10,6 +10,7 @@ import { xrStore } from "@/xr/xrStore";
 
 const tmpQ = new Quaternion();
 const tmpV = new Vector3();
+const HAND_FORWARD = new Vector3(0, 0, -1);
 const raycaster = new Raycaster();
 const noop = () => {};
 
@@ -35,8 +36,14 @@ export function HeldObject() {
     });
     const a = grab.active;
     if (a) {
-      g.position.copy(a.ray.origin).addScaledVector(a.ray.direction, a.distance);
-      g.quaternion.copy(rayQuaternion(a.ray, tmpQ)).multiply(a.rotOffset);
+      if (a.handPosition && a.handQuaternion) {
+        tmpV.copy(HAND_FORWARD).applyQuaternion(a.handQuaternion);
+        g.position.copy(a.handPosition).addScaledVector(tmpV, 0.16);
+        g.quaternion.copy(a.handQuaternion).multiply(a.rotOffset);
+      } else {
+        g.position.copy(a.ray.origin).addScaledVector(a.ray.direction, a.distance);
+        g.quaternion.copy(rayQuaternion(a.ray, tmpQ)).multiply(a.rotOffset);
+      }
     } else if (!inSession) {
       // Desktop "in hand": follow the mouse ray; next click on the floor places it.
       raycaster.setFromCamera(pointer, camera);

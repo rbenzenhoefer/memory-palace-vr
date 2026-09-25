@@ -33,6 +33,8 @@ export interface PalaceState {
   /** Releases the held object back to its last valid location. */
   cancelHold: () => void;
   stow: (locusId: string) => boolean;
+  /** Stores a visible portable locus directly without disturbing another held object. */
+  stowDirect: (locus: LocusSpec) => boolean;
   retrieve: (locusId: string) => void;
 }
 
@@ -90,6 +92,21 @@ export const usePalaceStore = create<PalaceState>((set, get) => ({
     set({
       inventory: [...s.inventory, locusId],
       heldLocusId: s.heldLocusId === locusId ? null : s.heldLocusId,
+    });
+    return true;
+  },
+
+  stowDirect: (locus) => {
+    const s = get();
+    if (s.inventory.includes(locus.id)) return true;
+    if (s.inventory.length >= INVENTORY_SLOTS) {
+      set({ beltFlashAt: performance.now() });
+      return false;
+    }
+    set({
+      inventory: [...s.inventory, locus.id],
+      heldLocusId: s.heldLocusId === locus.id ? null : s.heldLocusId,
+      carriedSpecs: { ...s.carriedSpecs, [locus.id]: locus },
     });
     return true;
   },

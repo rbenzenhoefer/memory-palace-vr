@@ -2,6 +2,7 @@
 import { Euler, Object3D, Quaternion, Ray, Raycaster, Vector3, type Scene } from "three";
 
 import { usePalaceStore } from "@/state/palaceStore";
+import type { LocusSpec } from "@/lib/palace/types";
 
 export interface ActiveGrab {
   pointerId: number;
@@ -10,13 +11,17 @@ export interface ActiveGrab {
   /** Object rotation relative to the ray orientation at grab time. */
   rotOffset: Quaternion;
   ownerId: string;
+  /** Live controller/hand pose. Desktop pointers leave this unset. */
+  handPosition: Vector3 | undefined;
+  handQuaternion: Quaternion | undefined;
 }
 
 export const grab: {
   active: ActiveGrab | null;
   held: Object3D | null;
   belt: Object3D | null;
-} = { active: null, held: null, belt: null };
+  hoveredPortable: LocusSpec | null;
+} = { active: null, held: null, belt: null, hoveredPortable: null };
 
 const FORWARD = new Vector3(0, 0, -1);
 const tmpQ = new Quaternion();
@@ -31,14 +36,18 @@ export function beginGrab(opts: {
   distance: number;
   objectQuat: Quaternion;
   ownerId: string;
+  handPosition?: Vector3 | undefined;
+  handQuaternion?: Quaternion | undefined;
 }) {
-  const rq = rayQuaternion(opts.ray, tmpQ);
+  const rq = opts.handQuaternion ?? rayQuaternion(opts.ray, tmpQ);
   grab.active = {
     pointerId: opts.pointerId,
     ray: opts.ray.clone(),
     distance: Math.min(1.5, Math.max(0.4, opts.distance)),
     rotOffset: rq.clone().invert().multiply(opts.objectQuat),
     ownerId: opts.ownerId,
+    handPosition: opts.handPosition?.clone(),
+    handQuaternion: opts.handQuaternion?.clone(),
   };
 }
 
