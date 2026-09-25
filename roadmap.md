@@ -1,0 +1,3 @@
+- [x] Rework the home room architecture and furniture for Golden Hour.
+- [x] Add textured surfaces and a photographic landscape.
+- [x] Preserve portals, VR controls, and the other room; check desktop and mobile rendering.
