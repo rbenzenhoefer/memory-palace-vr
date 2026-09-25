@@ -8,6 +8,7 @@ import { Locus, PEDESTAL_H, Pedestal } from "@/components/palace/Locus";
 import { HomeFloor, HomeLivingRoom } from "@/components/palace/HomeLivingRoom";
 import { Portal } from "@/components/palace/Portal";
 import { QuizStationPlaceholder } from "@/components/palace/QuizStationPlaceholder";
+import { TutorialRoom } from "@/components/palace/TutorialRoom";
 import {
   WarehouseCeilingMaterial,
   WarehouseFloor,
@@ -64,6 +65,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
   const accent = room.theme.accentColor ?? "#c9a227";
   const sky = room.theme.skyColor ?? "#12141a";
   const isWarehouse = room.slug === "warehouse";
+  const isTutorial = room.slug === "tutorial";
 
   // Click-to-place when an object is in hand without an active drag (desktop inventory, after portals).
   const onSurfaceClick = (e: ThreeEvent<MouseEvent>) => {
@@ -160,6 +162,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
         </>
       )}
       {isWarehouse && <WarehouseRoom />}
+      {isTutorial && <TutorialRoom room={room} />}
     </group>
   );
 }
