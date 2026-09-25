@@ -63,8 +63,8 @@ export function ThumbstickLocomotion({ originRef }: { originRef: RefObject<Group
       if (src.handedness !== "left" || !src.gamepad) return;
       const a = src.gamepad.axes;
       // xr-standard: axes[2]/[3] = thumbstick; some devices only expose [0]/[1].
-      const x = a.length >= 4 ? a[2] : (a[0] ?? 0);
-      const y = a.length >= 4 ? a[3] : (a[1] ?? 0);
+      const x = (a.length >= 4 ? a[2] : a[0]) ?? 0;
+      const y = (a.length >= 4 ? a[3] : a[1]) ?? 0;
       lx = Math.abs(x) > Math.abs(lx) ? x : lx;
       ly = Math.abs(y) > Math.abs(ly) ? y : ly;
     });
