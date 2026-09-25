@@ -1,0 +1,27 @@
+<svg viewBox="0 0 640 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ablauf des spielbaren Tutorials">
+  <style>
+    text{font-family:var(--font-sans);fill:var(--fg-primary)}
+    .small{font-size:12px;fill:var(--fg-secondary)}
+    .label{font-size:14px;font-weight:480}
+    .box{fill:none;stroke:var(--fg-secondary);stroke-width:1}
+    .done{fill:var(--bg-muted);stroke:var(--fg-secondary);stroke-width:1}
+    .accent{fill:var(--bg-accent-translucent);stroke:var(--fg-accent);stroke-width:1}
+    .wire{fill:none;stroke:var(--fg-secondary);stroke-width:1;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--fg-secondary)"/></marker></defs>
+  <rect class="box" x="230" y="18" width="180" height="48" rx="8"/><text class="label" x="320" y="47" text-anchor="middle">Portal im Wohnzimmer</text>
+  <path class="wire" d="M320 66V92"/>
+  <rect class="done" x="230" y="94" width="180" height="48" rx="8"/><text class="label" x="320" y="123" text-anchor="middle">Willkommen</text>
+  <path class="wire" d="M320 142V168"/>
+  <rect class="accent" x="200" y="170" width="240" height="62" rx="8"/><text class="label" x="320" y="198" text-anchor="middle">Locus greifen und platzieren</text><text class="small" x="320" y="218" text-anchor="middle">echte Objektaktion schaltet weiter</text>
+  <path class="wire" d="M320 232V258"/>
+  <rect class="box" x="54" y="260" width="138" height="58" rx="8"/><text class="label" x="123" y="285" text-anchor="middle">Neuron</text><text class="small" x="123" y="304" text-anchor="middle">1</text>
+  <rect class="box" x="202" y="260" width="138" height="58" rx="8"/><text class="label" x="271" y="285" text-anchor="middle">Synapse</text><text class="small" x="271" y="304" text-anchor="middle">2</text>
+  <rect class="box" x="350" y="260" width="138" height="58" rx="8"/><text class="label" x="419" y="285" text-anchor="middle">Hippocampus</text><text class="small" x="419" y="304" text-anchor="middle">3</text>
+  <rect class="box" x="498" y="260" width="106" height="58" rx="8"/><text class="label" x="551" y="285" text-anchor="middle">Kortex</text><text class="small" x="551" y="304" text-anchor="middle">4</text>
+  <path class="wire" d="M192 289H202"/><path class="wire" d="M340 289H350"/><path class="wire" d="M488 289H498"/>
+  <path class="wire" d="M320 318V344"/>
+  <rect class="box" x="145" y="346" width="160" height="52" rx="8"/><text class="label" x="225" y="370" text-anchor="middle">Bodenroute folgen</text><text class="small" x="225" y="388" text-anchor="middle">nächster Abschnitt leuchtet</text>
+  <path class="wire" d="M305 372H335"/>
+  <rect class="done" x="337" y="346" width="158" height="52" rx="8"/><text class="label" x="416" y="370" text-anchor="middle">Abschluss</text><text class="small" x="416" y="388" text-anchor="middle">neu starten oder zurück</text>
+</svg>
