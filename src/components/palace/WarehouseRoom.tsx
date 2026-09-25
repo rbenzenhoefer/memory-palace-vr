@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 
+import { ShelfRack } from "@/components/palace/ShelfRack";
+
 const WAREHOUSE = {
   concrete: "#727678",
   concreteDark: "#5d6264",
@@ -97,6 +99,16 @@ export function WarehouseRoom() {
       <pointLight position={[0, 3.35, 0]} intensity={4.5} distance={14} color={WAREHOUSE.light} />
       <pointLight position={[-3, 2.2, -4.5]} intensity={2.4} distance={8} color="#d9e7ea" />
       <pointLight position={[3, 2.2, 4.5]} intensity={2.2} distance={8} color={WAREHOUSE.safety} />
+
+      {/* Five rack fronts face -X, leaving the central aisle and return portal clear. */}
+      {[-2.8, -1.4, 0, 1.4, 2.8].map((z, rackIndex) => (
+        <ShelfRack
+          key={rackIndex}
+          rackIndex={rackIndex}
+          position={[3.64, 0, z]}
+          rotation={[0, -Math.PI / 2, 0]}
+        />
+      ))}
 
       {/* A low perimeter guard visually anchors the wall/floor junction without furnishing the room. */}
       {[
