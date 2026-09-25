@@ -49,7 +49,7 @@ function GuideCard() {
   };
 
   return (
-    <Billboard position={[0, 1.85, 3.4]}>
+    <Billboard position={[0, 1.85, 1.8]}>
       <group>
         <RoundedBox args={[2.35, 1.14, 0.035]} radius={0.08} smoothness={5}>
           <meshStandardMaterial color={PANEL} roughness={0.42} metalness={0.2} transparent opacity={0.96} />
