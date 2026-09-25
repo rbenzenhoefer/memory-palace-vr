@@ -129,6 +129,35 @@ export async function fetchRooms(): Promise<RoomSummary[]> {
   }));
 }
 
+export interface ShelfObjectSpec {
+  id: number;
+  cardIndex: number;
+  question: string;
+  answer: string;
+  locusSlug: string;
+  slotIndex: number;
+  url: string;
+}
+
+export async function fetchLocusObjects(room: string): Promise<ShelfObjectSpec[]> {
+  const { data, error } = await supabase
+    .from("locus_objects")
+    .select("id, card_index, question, answer, locus_slug, glb_path, slot_index")
+    .eq("room", room)
+    .not("slot_index", "is", null)
+    .order("card_index", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    cardIndex: r.card_index,
+    question: r.question,
+    answer: r.answer,
+    locusSlug: r.locus_slug,
+    slotIndex: r.slot_index as number,
+    url: supabase.storage.from("locus-objects").getPublicUrl(r.glb_path).data.publicUrl,
+  }));
+}
+
 export async function getLocusImportAccess(): Promise<{
   signedIn: boolean;
   isAdmin: boolean;
