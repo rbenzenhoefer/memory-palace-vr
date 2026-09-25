@@ -6,14 +6,14 @@ interface Props {
 }
 
 export class ErrorBoundary extends Component<Props, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidCatch(error: unknown) {
+  override componentDidCatch(error: unknown) {
     console.warn("Model failed to load, using fallback", error);
   }
-  render() {
+  override render() {
     return this.state.failed ? this.props.fallback : this.props.children;
   }
 }
