@@ -49,6 +49,7 @@ export function Locus({
   rotation,
   withPedestal = false,
   hidden = false,
+  showLabel = true,
 }: {
   locus: LocusSpec;
   accent: string;
@@ -56,6 +57,7 @@ export function Locus({
   rotation: Vec3;
   withPedestal?: boolean;
   hidden?: boolean;
+  showLabel?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -185,7 +187,7 @@ export function Locus({
           <LocusVisual locus={locus} glow={hovered} />
         </group>
       </group>
-      {!hidden && (
+      {!hidden && showLabel && (
         <Billboard position-y={top + 0.2}>
           <Text fontSize={0.12} color={accent} outlineWidth={0.004} outlineColor="#000">
             {locus.label}
