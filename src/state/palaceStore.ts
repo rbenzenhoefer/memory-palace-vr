@@ -2,6 +2,7 @@ import { Vector3 } from "three";
 import { create } from "zustand";
 
 import type { LocusSpec, Vec3 } from "@/lib/palace/types";
+import { useTutorialStore } from "@/state/tutorialStore";
 
 export const INVENTORY_SLOTS = 6;
 
@@ -78,6 +79,7 @@ export const usePalaceStore = create<PalaceState>((set, get) => ({
       heldLocusId: null,
       placements: { ...s.placements, [id]: { roomSlug, position, rotation } },
     }));
+    useTutorialStore.getState().registerDrop(id, roomSlug, position);
   },
 
   cancelHold: () => set({ heldLocusId: null }),

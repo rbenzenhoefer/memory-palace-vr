@@ -1,3 +1,9 @@
 - [x] Rework the home room architecture and furniture for Golden Hour.
 - [x] Add textured surfaces and a photographic landscape.
 - [x] Preserve portals, VR controls, and the other room; check desktop and mobile rendering.
+- [x] Add the data-driven tutorial room and living-room portal.
+- [x] Add the central session-only tutorial state machine.
+- [x] Connect real Locus click and placement actions to tutorial progress.
+- [x] Add immersive guide cards, target markers, route visualization, and completion flow.
+- [x] Verify the full state flow and existing preview stability.
+- [x] Add the tutorial room, portals, and learning objects to the shared live data for draft testing.

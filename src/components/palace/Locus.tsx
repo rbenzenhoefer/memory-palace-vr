@@ -8,6 +8,7 @@ import { LocusVisual, locusHeight } from "@/components/palace/LocusVisual";
 import { beginGrab, grab, releaseHeld } from "@/lib/palace/grab";
 import type { LocusSpec, Vec3 } from "@/lib/palace/types";
 import { usePalaceStore } from "@/state/palaceStore";
+import { activeTutorialLocusId, useTutorialStore } from "@/state/tutorialStore";
 
 export const PEDESTAL_H = 1;
 const CLICK_MS = 200;
@@ -66,6 +67,7 @@ export function Locus({
   const camera = useThree((s) => s.camera);
   const scene = useThree((s) => s.scene);
   const portable = locus.isPortable;
+  const tutorialActive = useTutorialStore((state) => activeTutorialLocusId(state) === locus.id);
 
   // If this object unmounts while it owns the active grab (e.g. room change), drop the ray link.
   useEffect(
@@ -153,12 +155,16 @@ export function Locus({
       releaseHeld(scene, ne && "clientX" in ne ? { x: ne.clientX, y: ne.clientY } : undefined);
       return;
     }
-    if (p && performance.now() - p.t < CLICK_MS) setOpen((o) => !o);
+    if (p && performance.now() - p.t < CLICK_MS) {
+      setOpen((o) => !o);
+      useTutorialStore.getState().interact(locus);
+    }
   };
 
   const onClickStatic = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     setOpen((o) => !o);
+    useTutorialStore.getState().interact(locus);
   };
 
   const handlers = portable
@@ -183,8 +189,8 @@ export function Locus({
       {/* Kept mounted while held so pointer capture keeps delivering move/up events. */}
       <group ref={objRef} {...handlers}>
         {withPedestal && !portable && <Pedestal position={[0, 0, 0]} rotation={[0, 0, 0]} />}
-        <group position-y={baseY} scale={hovered ? 1.06 : 1} visible={!hidden}>
-          <LocusVisual locus={locus} glow={hovered} />
+        <group position-y={baseY} scale={hovered || tutorialActive ? 1.06 : 1} visible={!hidden}>
+          <LocusVisual locus={locus} glow={hovered || tutorialActive} />
         </group>
       </group>
       {!hidden && showLabel && (

@@ -68,8 +68,10 @@ function SceneContent() {
 function DesktopControls() {
   const inSession = useStore(xrStore, (s) => s.session != null);
   const holding = usePalaceStore((s) => s.heldLocusId != null);
+  const roomSlug = usePalaceStore((s) => s.currentRoomSlug);
   if (inSession) return null;
-  return <OrbitControls target={[3.8, 1.6, -0.8]} makeDefault enabled={!holding} />;
+  const target: [number, number, number] = roomSlug === "tutorial" ? [0, 1.6, 0] : [3.8, 1.6, -0.8];
+  return <OrbitControls target={target} makeDefault enabled={!holding} />;
 }
 
 /** Single, always-mounted XR canvas for the whole app. */
