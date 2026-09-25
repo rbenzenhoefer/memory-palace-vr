@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Palace destinations are data-driven rooms inside the single persistent XR Canvas, because browser-route changes would interrupt active VR sessions.
+- Import writes require an authenticated `admin` row in `user_roles`, because public clients may only read learning objects and models.
