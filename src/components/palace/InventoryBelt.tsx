@@ -5,7 +5,7 @@ import { Quaternion, Ray, type Group, type MeshBasicMaterial } from "three";
 
 import { LocusVisual } from "@/components/palace/LocusVisual";
 import { beginGrab, grab, heldOverBelt, releaseHeld } from "@/lib/palace/grab";
-import { INVENTORY_SLOTS, usePalaceStore } from "@/state/palaceStore";
+import { INVENTORY_SLOTS, selectedIndex, usePalaceStore } from "@/state/palaceStore";
 
 const RADIUS = 0.52;
 const SPREAD = 1.18; // radians across the arc
@@ -28,8 +28,11 @@ function Slot({ index, locusId }: { index: number; locusId: string | undefined }
     const s = usePalaceStore.getState();
     const flashing = performance.now() - s.beltFlashAt < 600;
     const target = s.heldLocusId && heldOverBelt() && index === s.inventory.length;
-    m.color.set(flashing ? "#e0473c" : target ? "#ffd27a" : locusId ? "#c9a227" : "#f3e7d3");
-    m.opacity = flashing || target ? 0.95 : locusId ? 0.7 : 0.3;
+    const selected = index === selectedIndex(s);
+    m.color.set(flashing ? "#e0473c" : target ? "#ffd27a" : selected ? "#7fe0ff" : locusId ? "#c9a227" : "#f3e7d3");
+    m.opacity = flashing || target || selected ? 0.95 : locusId ? 0.7 : 0.3;
+    const root = m.userData["root"] as Group | undefined;
+    root?.scale.setScalar(selected ? 1.18 : 1);
   });
 
   const rayOf = (e: AnyPointerEvent) =>
