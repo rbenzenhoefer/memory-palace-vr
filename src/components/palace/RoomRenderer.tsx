@@ -6,6 +6,7 @@ import type { Vector3 } from "three";
 
 import { Locus, PEDESTAL_H, Pedestal } from "@/components/palace/Locus";
 import { HomeFloor, HomeLivingRoom } from "@/components/palace/HomeLivingRoom";
+import { NeuroLabCeilingMaterial, NeuroLabFloor, NeuroLabRoom, NeuroLabWallMaterial } from "@/components/palace/NeuroLabRoom";
 import { Portal } from "@/components/palace/Portal";
 import { QuizStationPlaceholder } from "@/components/palace/QuizStationPlaceholder";
 import { ScannedRoom } from "@/components/palace/ScannedRoom";
@@ -66,6 +67,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
   const accent = room.theme.accentColor ?? "#c9a227";
   const sky = room.theme.skyColor ?? "#12141a";
   const isWarehouse = room.slug === "warehouse";
+  const isNeuroLab = room.slug === "neuro";
   const isTutorial = room.slug === "tutorial";
   const scanUrl = (room.theme as Record<string, unknown>)["scanUrl"] as string | undefined;
   const isScan = !!scanUrl;
@@ -89,9 +91,9 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
     <group>
       <color attach="background" args={[sky]} />
       <fog attach="fog" args={[sky, 15, 45]} />
-      <ambientLight intensity={room.isHome ? 0.2 : isWarehouse ? 0.48 : 0.35} />
-      <hemisphereLight args={[wall, floor, room.isHome ? 0.25 : isWarehouse ? 0.85 : 0.6]} />
-      {!isWarehouse && !room.isHome && !isScan && (
+      <ambientLight intensity={room.isHome ? 0.2 : isWarehouse ? 0.48 : isNeuroLab ? 0.28 : 0.35} />
+      <hemisphereLight args={[wall, floor, room.isHome ? 0.25 : isWarehouse ? 0.85 : isNeuroLab ? 0.42 : 0.6]} />
+      {!isWarehouse && !isNeuroLab && !room.isHome && !isScan && (
         <pointLight position={[0, height - 0.5, 0]} intensity={12} distance={20} color={accent} />
       )}
 
@@ -108,6 +110,8 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
           <planeGeometry args={[width, depth]} />
           {room.isHome ? (
             <HomeFloor />
+          ) : isNeuroLab ? (
+            <NeuroLabFloor />
           ) : isWarehouse ? (
             <WarehouseFloor />
           ) : (
@@ -119,12 +123,12 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
       {walls.map((w, i) => (
         <mesh key={i} position={w.pos} rotation-y={w.rotY} receiveShadow>
           <planeGeometry args={[w.w, height]} />
-          {isWarehouse ? <WarehouseWallMaterial /> : <meshStandardMaterial color={wall} roughness={0.9} />}
+          {isWarehouse ? <WarehouseWallMaterial /> : isNeuroLab ? <NeuroLabWallMaterial /> : <meshStandardMaterial color={wall} roughness={0.9} />}
         </mesh>
       ))}
       <mesh position-y={height} rotation-x={Math.PI / 2}>
         <planeGeometry args={[width, depth]} />
-        {isWarehouse ? <WarehouseCeilingMaterial /> : <meshStandardMaterial color={wall} roughness={0.95} />}
+        {isWarehouse ? <WarehouseCeilingMaterial /> : isNeuroLab ? <NeuroLabCeilingMaterial /> : <meshStandardMaterial color={wall} roughness={0.95} />}
       </mesh>
 
       {!room.isHome && <Text
@@ -169,6 +173,7 @@ export function RoomRenderer({ room }: { room: RoomSpec }) {
         </>
       )}
       {isWarehouse && <WarehouseRoom />}
+      {isNeuroLab && <NeuroLabRoom pyramidalNeuron={room.loci.find((l) => l.label === "Pyramidenneuron")} />}
       {isTutorial && <TutorialRoom room={room} />}
     </group>
   );
