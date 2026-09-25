@@ -37,12 +37,12 @@ function parseManifest(file: File): Promise<LocusObjectManifestEntry[]> {
       if (!item || typeof item !== "object") throw new Error(`Eintrag ${index + 1} ist ungültig.`);
       const entry = item as Record<string, unknown>;
       if (
-        !Number.isInteger(entry.id) || Number(entry.id) < 1 || Number(entry.id) > 20 ||
-        typeof entry.question !== "string" || !entry.question.trim() ||
-        typeof entry.answer !== "string" || !entry.answer.trim() ||
-        typeof entry.locus !== "string" || !entry.locus.trim() ||
-        typeof entry.file !== "string" || !entry.file.toLowerCase().endsWith(".glb") ||
-        typeof entry.triangles !== "number"
+        !Number.isInteger(entry["id"]) || Number(entry["id"]) < 1 || Number(entry["id"]) > 20 ||
+        typeof entry["question"] !== "string" || !entry["question"].trim() ||
+        typeof entry["answer"] !== "string" || !entry["answer"].trim() ||
+        typeof entry["locus"] !== "string" || !entry["locus"].trim() ||
+        typeof entry["file"] !== "string" || !entry["file"].toLowerCase().endsWith(".glb") ||
+        typeof entry["triangles"] !== "number"
       ) throw new Error(`Eintrag ${index + 1} hat fehlende oder ungültige Felder.`);
       return entry as unknown as LocusObjectManifestEntry;
     });
