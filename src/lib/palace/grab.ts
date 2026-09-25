@@ -74,7 +74,7 @@ export function releaseHeld(scene: Scene, client?: { x: number; y: number }) {
   const origin = grab.held.getWorldPosition(new Vector3()).add(new Vector3(0, 0.05, 0));
   const surfaces: Object3D[] = [];
   scene.traverse((o) => {
-    if (o.userData.dropSurface) surfaces.push(o);
+    if (o.userData['dropSurface']) surfaces.push(o);
   });
   raycaster.set(origin, new Vector3(0, -1, 0));
   const hit = raycaster.intersectObjects(surfaces, false)[0];
