@@ -1,118 +1,167 @@
-import { Billboard, Text, useGLTF } from "@react-three/drei";
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { Suspense, useMemo, useRef, useState } from "react";
-import { Box3, Vector3, type Mesh, type MeshStandardMaterial } from "three";
+import { Billboard, Text } from "@react-three/drei";
+import { useThree, type ThreeEvent } from "@react-three/fiber";
+import { useEffect, useRef, useState } from "react";
+import { Quaternion, Ray, Vector3, type Group } from "three";
 
-import { ErrorBoundary } from "@/components/palace/ErrorBoundary";
 import { InfoPanel } from "@/components/palace/InfoPanel";
-import type { LocusSpec, PrimitiveSpec } from "@/lib/palace/types";
+import { LocusVisual, locusHeight } from "@/components/palace/LocusVisual";
+import { beginGrab, grab, releaseHeld } from "@/lib/palace/grab";
+import type { LocusSpec, Vec3 } from "@/lib/palace/types";
+import { usePalaceStore } from "@/state/palaceStore";
 
-const PEDESTAL_H = 1;
-const OBJECT_SIZE = 0.5; // primitive fallback size (m)
+export const PEDESTAL_H = 1;
+const CLICK_MS = 200;
 
-function GltfModel({ url, scale }: { url: string; scale: number }) {
-  const { scene } = useGLTF(url);
-  const { object, factor, offsetY } = useMemo(() => {
-    const clone = scene.clone(true);
-    const box = new Box3().setFromObject(clone);
-    const size = box.getSize(new Vector3());
-    const maxSide = Math.max(size.x, size.y, size.z) || 1;
-    const f = (1 / maxSide) * scale;
-    const center = box.getCenter(new Vector3());
-    clone.position.set(-center.x, -box.min.y, -center.z);
-    return { object: clone, factor: f, offsetY: 0 };
-  }, [scene, scale]);
+/** Stone pedestal; its top is a drop surface for carried objects. */
+export function Pedestal({ position, rotation }: { position: Vec3; rotation: Vec3 }) {
   return (
-    <group scale={factor} position-y={offsetY}>
-      <primitive object={object} />
-    </group>
-  );
-}
-
-function PrimitiveModel({
-  primitive,
-  scale,
-  pulse,
-}: {
-  primitive: PrimitiveSpec;
-  scale: number;
-  pulse: boolean;
-}) {
-  const ref = useRef<Mesh>(null);
-  useFrame(({ clock }) => {
-    if (!pulse || !ref.current) return;
-    const t = (Math.sin(clock.elapsedTime * 2) + 1) / 2;
-    (ref.current.material as MeshStandardMaterial).emissiveIntensity = 0.1 + t * 0.6;
-    ref.current.scale.setScalar(scale * (0.95 + t * 0.08));
-  });
-  const s = OBJECT_SIZE;
-  const geometry = (() => {
-    switch (primitive.shape) {
-      case "sphere":
-        return <sphereGeometry args={[s / 2, 32, 16]} />;
-      case "cylinder":
-        return <cylinderGeometry args={[s / 2, s / 2, s, 32]} />;
-      case "torus":
-        return <torusGeometry args={[s * 0.35, s * 0.13, 16, 48]} />;
-      default:
-        return <boxGeometry args={[s, s, s]} />;
-    }
-  })();
-  return (
-    <mesh ref={ref} position-y={s / 2} scale={scale} castShadow>
-      {geometry}
-      <meshStandardMaterial
-        color={primitive.color}
-        emissive={primitive.color}
-        emissiveIntensity={pulse ? 0.3 : 0.05}
-        roughness={0.4}
-        metalness={0.1}
-      />
+    <mesh
+      position={[position[0], position[1] + PEDESTAL_H / 2, position[2]]}
+      rotation={rotation}
+      castShadow
+      receiveShadow
+      userData={{ dropSurface: true }}
+    >
+      <cylinderGeometry args={[0.28, 0.34, PEDESTAL_H, 32]} />
+      <meshStandardMaterial color="#e8e2d6" roughness={0.7} />
     </mesh>
   );
 }
 
-export function Locus({ locus, accent }: { locus: LocusSpec; accent: string }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyPointerEvent = ThreeEvent<PointerEvent> & { ray?: Ray; target: any; nativeEvent: any };
+
+/**
+ * A memory object. With `withPedestal`, `position` is the floor point and a pedestal is drawn;
+ * otherwise `position` is where the object's base rests.
+ */
+export function Locus({
+  locus,
+  accent,
+  position,
+  rotation,
+  withPedestal = false,
+  hidden = false,
+}: {
+  locus: LocusSpec;
+  accent: string;
+  position: Vec3;
+  rotation: Vec3;
+  withPedestal?: boolean;
+  hidden?: boolean;
+}) {
   const [open, setOpen] = useState(false);
-  const asset = locus.asset;
-  const pending = asset?.status === "pending";
-  const fallback = (
-    <PrimitiveModel primitive={locus.primitive} scale={locus.scale} pulse={pending} />
+  const [hovered, setHovered] = useState(false);
+  const objRef = useRef<Group>(null);
+  const press = useRef<{ t: number; ray: Ray; point: Vector3; timer: number } | null>(null);
+  const camera = useThree((s) => s.camera);
+  const scene = useThree((s) => s.scene);
+  const portable = locus.isPortable;
+
+  // If this object unmounts while it owns the active grab (e.g. room change), drop the ray link.
+  useEffect(
+    () => () => {
+      if (grab.active?.ownerId === locus.id) grab.active = null;
+    },
+    [locus.id],
   );
 
-  const onClick = (e: ThreeEvent<MouseEvent>) => {
+  const baseY = withPedestal ? PEDESTAL_H : 0;
+  const top = baseY + Math.max(locusHeight(locus), withPedestal ? 1 : 0.3);
+
+  const rayOf = (e: AnyPointerEvent) =>
+    e.ray ?? new Ray(camera.position.clone(), e.point.clone().sub(camera.position).normalize());
+
+  const startGrab = (pointerId: number, ray: Ray, point: Vector3) => {
+    if (!objRef.current) return;
+    const quat = objRef.current.getWorldQuaternion(new Quaternion());
+    if (!usePalaceStore.getState().pickUp(locus)) return;
+    beginGrab({ pointerId, ray, distance: ray.origin.distanceTo(point), objectQuat: quat, ownerId: locus.id });
+    setOpen(false);
+    setHovered(false);
+  };
+
+  const onPointerDown = (e: AnyPointerEvent) => {
+    e.stopPropagation();
+    e.target?.setPointerCapture?.(e.pointerId);
+    const ray = rayOf(e).clone();
+    const point = e.point.clone();
+    const pointerId = e.pointerId;
+    const timer = window.setTimeout(() => {
+      if (press.current) startGrab(pointerId, press.current.ray, press.current.point);
+    }, CLICK_MS);
+    press.current = { t: performance.now(), ray, point, timer };
+  };
+
+  const onPointerMove = (e: AnyPointerEvent) => {
+    const active = grab.active;
+    if (active && active.ownerId === locus.id && active.pointerId === e.pointerId) {
+      active.ray.copy(rayOf(e));
+      return;
+    }
+    const p = press.current;
+    if (p && !active) {
+      const moved = rayOf(e).direction.angleTo(p.ray.direction) > 0.03;
+      if (moved) {
+        window.clearTimeout(p.timer);
+        startGrab(e.pointerId, p.ray, p.point);
+        if (grab.active) grab.active.ray.copy(rayOf(e));
+      }
+    }
+  };
+
+  const onPointerUp = (e: AnyPointerEvent) => {
+    e.stopPropagation();
+    e.target?.releasePointerCapture?.(e.pointerId);
+    const p = press.current;
+    press.current = null;
+    if (p) window.clearTimeout(p.timer);
+    if (grab.active?.ownerId === locus.id) {
+      const ne = e.nativeEvent;
+      releaseHeld(scene, ne && "clientX" in ne ? { x: ne.clientX, y: ne.clientY } : undefined);
+      return;
+    }
+    if (p && performance.now() - p.t < CLICK_MS) setOpen((o) => !o);
+  };
+
+  const onClickStatic = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     setOpen((o) => !o);
   };
 
-  const objectTop = PEDESTAL_H + Math.max(OBJECT_SIZE, 1) * locus.scale;
+  const handlers = portable
+    ? {
+        onPointerDown,
+        onPointerMove,
+        onPointerUp,
+        onPointerOver: (e: ThreeEvent<PointerEvent>) => {
+          e.stopPropagation();
+          setHovered(true);
+        },
+        onPointerOut: () => setHovered(false),
+      }
+    : { onClick: onClickStatic };
 
   return (
-    <group position={locus.position} rotation={locus.rotation}>
-      <group onClick={onClick}>
-        <mesh position-y={PEDESTAL_H / 2} castShadow receiveShadow>
-          <cylinderGeometry args={[0.28, 0.34, PEDESTAL_H, 32]} />
-          <meshStandardMaterial color="#e8e2d6" roughness={0.7} />
-        </mesh>
-        <group position-y={PEDESTAL_H}>
-          {asset?.status === "ready" && asset.url ? (
-            <ErrorBoundary fallback={fallback}>
-              <Suspense fallback={fallback}>
-                <GltfModel url={asset.url} scale={locus.scale} />
-              </Suspense>
-            </ErrorBoundary>
-          ) : (
-            fallback
-          )}
-        </group>
+    <group position={position} rotation={rotation}>
+      {/* Kept mounted while held so pointer capture keeps delivering move/up events. */}
+      <group ref={objRef} {...handlers}>
+        {withPedestal && !portable && <Pedestal position={[0, 0, 0]} rotation={[0, 0, 0]} />}
+        {!hidden && (
+          <group position-y={baseY} scale={hovered ? 1.06 : 1}>
+            <LocusVisual locus={locus} glow={hovered} />
+          </group>
+        )}
       </group>
-      <Billboard position-y={objectTop + 0.2}>
-        <Text fontSize={0.12} color={accent} outlineWidth={0.004} outlineColor="#000">
-          {locus.label}
-        </Text>
-      </Billboard>
-      {open && (
-        <InfoPanel cards={locus.cards} accent={accent} position={[0, objectTop + 0.3 + 0.5, 0]} />
+      {!hidden && (
+        <Billboard position-y={top + 0.2}>
+          <Text fontSize={0.12} color={accent} outlineWidth={0.004} outlineColor="#000">
+            {locus.label}
+          </Text>
+        </Billboard>
+      )}
+      {open && !hidden && (
+        <InfoPanel cards={locus.cards} accent={accent} position={[0, top + 0.8, 0]} />
       )}
     </group>
   );
