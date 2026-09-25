@@ -66,6 +66,17 @@ export function Locus({
     [locus.id],
   );
 
+  // Safety net for desktop: if the capture is lost, a window pointerup still releases the object.
+  useEffect(() => {
+    if (!hidden) return;
+    const onUp = (e: PointerEvent) => {
+      if (grab.active?.ownerId !== locus.id) return;
+      releaseHeld(scene, { x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("pointerup", onUp);
+    return () => window.removeEventListener("pointerup", onUp);
+  }, [hidden, locus.id, scene]);
+
   const baseY = withPedestal ? PEDESTAL_H : 0;
   const top = baseY + Math.max(locusHeight(locus), withPedestal ? 1 : 0.3);
 
@@ -147,11 +158,9 @@ export function Locus({
       {/* Kept mounted while held so pointer capture keeps delivering move/up events. */}
       <group ref={objRef} {...handlers}>
         {withPedestal && !portable && <Pedestal position={[0, 0, 0]} rotation={[0, 0, 0]} />}
-        {!hidden && (
-          <group position-y={baseY} scale={hovered ? 1.06 : 1}>
-            <LocusVisual locus={locus} glow={hovered} />
-          </group>
-        )}
+        <group position-y={baseY} scale={hovered ? 1.06 : 1} visible={!hidden}>
+          <LocusVisual locus={locus} glow={hovered} />
+        </group>
       </group>
       {!hidden && (
         <Billboard position-y={top + 0.2}>
