@@ -1,12 +1,11 @@
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useRef, useState } from "react";
+import { useRef } from "react";
 import type { Mesh, MeshStandardMaterial } from "three";
 
-import { ErrorBoundary } from "@/components/palace/ErrorBoundary";
-import { InfoPanel } from "@/components/palace/InfoPanel";
-import { GltfModel } from "@/components/palace/LocusVisual";
+import { Locus } from "@/components/palace/Locus";
 import type { ShelfObjectSpec } from "@/lib/palace/palaceApi";
-import type { CardSpec, Vec3 } from "@/lib/palace/types";
+import type { LocusSpec, Vec3 } from "@/lib/palace/types";
+import { usePalaceStore } from "@/state/palaceStore";
 
 const RACK_WIDTH = 1.2;
 const RACK_DEPTH = 0.6;
@@ -52,35 +51,49 @@ function Placeholder({ pulse = false }: { pulse?: boolean }) {
   );
 }
 
+const specCache = new Map<number, LocusSpec>();
+
+/** Converts an imported shelf object into a regular portable locus (stable identity). */
+function toLocusSpec(item: ShelfObjectSpec): LocusSpec {
+  const cached = specCache.get(item.id);
+  if (cached && cached.asset?.url === item.url) return cached;
+  const spec: LocusSpec = {
+    id: `lo-${item.id}`,
+    orderIndex: item.cardIndex,
+    label: item.locusSlug.replace(/_/g, " "),
+    position: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: 0.35,
+    primitive: { shape: "box", color: "#52a9c7" },
+    isPortable: true,
+    asset: { id: `lo-asset-${item.id}`, name: item.locusSlug, url: item.url, status: "ready", defaultScale: 1 },
+    cards: [
+      { id: String(item.id), front: item.question, back: item.answer, extra: null, source: "manual", externalId: null },
+    ],
+  };
+  specCache.set(item.id, spec);
+  return spec;
+}
+
 function ShelfItem({ item }: { item: ShelfObjectSpec }) {
-  const [open, setOpen] = useState(false);
-  const [hover, setHover] = useState(false);
-  const cards: CardSpec[] = [
-    { id: String(item.id), front: item.question, back: item.answer, extra: null, source: "manual", externalId: null },
-  ];
+  const spec = toLocusSpec(item);
+  const inInventory = usePalaceStore((s) => s.inventory.includes(spec.id));
+  const placed = usePalaceStore((s) => !!s.placements[spec.id]);
+  const held = usePalaceStore((s) => s.heldLocusId === spec.id);
+
+  if (inInventory || placed) return <Placeholder />;
   return (
-    <group>
-      <group
-        position-y={-0.12}
-        scale={hover ? 1.06 : 1}
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHover(true);
-        }}
-        onPointerOut={() => setHover(false)}
-      >
-        <ErrorBoundary fallback={<Placeholder />}>
-          <Suspense fallback={<Placeholder pulse />}>
-            <GltfModel url={item.url} size={0.35} />
-          </Suspense>
-        </ErrorBoundary>
-      </group>
-      {open && <InfoPanel cards={cards} accent="#d49b35" position={[0, 0.45, 0.45]} />}
-    </group>
+    <>
+      {held && <Placeholder />}
+      <Locus
+        locus={spec}
+        accent="#d49b35"
+        position={[0, -0.12, 0]}
+        rotation={[0, 0, 0]}
+        hidden={held}
+        showLabel={false}
+      />
+    </>
   );
 }
 
