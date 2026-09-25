@@ -55,9 +55,24 @@ export function ThumbstickLocomotion({ originRef }: { originRef: RefObject<Group
     }
 
     // Smooth move relative to the head's horizontal facing.
-    const stick = left?.gamepad?.["xr-standard-thumbstick"];
-    const lx = stick?.xAxis ?? 0;
-    const ly = stick?.yAxis ?? 0;
+    // Read raw axes from the live XR session (most reliable across devices).
+    let lx = 0;
+    let ly = 0;
+    const session = state.gl.xr.getSession();
+    session?.inputSources.forEach((src) => {
+      if (src.handedness !== "left" || !src.gamepad) return;
+      const a = src.gamepad.axes;
+      // xr-standard: axes[2]/[3] = thumbstick; some devices only expose [0]/[1].
+      const x = a.length >= 4 ? a[2] : (a[0] ?? 0);
+      const y = a.length >= 4 ? a[3] : (a[1] ?? 0);
+      lx = Math.abs(x) > Math.abs(lx) ? x : lx;
+      ly = Math.abs(y) > Math.abs(ly) ? y : ly;
+    });
+    if (lx === 0 && ly === 0) {
+      const stick = left?.gamepad?.["xr-standard-thumbstick"];
+      lx = stick?.xAxis ?? 0;
+      ly = stick?.yAxis ?? 0;
+    }
     if (Math.hypot(lx, ly) > MOVE_DEADZONE) {
       state.camera.getWorldDirection(fwd);
       fwd.y = 0;
