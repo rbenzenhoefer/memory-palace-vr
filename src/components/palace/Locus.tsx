@@ -69,6 +69,7 @@ export function Locus({
   useEffect(
     () => () => {
       if (grab.active?.ownerId === locus.id) grab.active = null;
+      if (grab.hoveredPortable?.id === locus.id) grab.hoveredPortable = null;
     },
     [locus.id],
   );

@@ -12,8 +12,8 @@ export interface ActiveGrab {
   rotOffset: Quaternion;
   ownerId: string;
   /** Live controller/hand pose. Desktop pointers leave this unset. */
-  handPosition?: Vector3;
-  handQuaternion?: Quaternion;
+  handPosition: Vector3 | undefined;
+  handQuaternion: Quaternion | undefined;
 }
 
 export const grab: {
@@ -36,8 +36,8 @@ export function beginGrab(opts: {
   distance: number;
   objectQuat: Quaternion;
   ownerId: string;
-  handPosition?: Vector3;
-  handQuaternion?: Quaternion;
+  handPosition?: Vector3 | undefined;
+  handQuaternion?: Quaternion | undefined;
 }) {
   const rq = opts.handQuaternion ?? rayQuaternion(opts.ray, tmpQ);
   grab.active = {

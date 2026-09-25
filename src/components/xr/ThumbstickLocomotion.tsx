@@ -12,6 +12,7 @@ const LOOK_DEADZONE = 0.15;
 const TURN_SPEED = MathUtils.degToRad(95);
 const PITCH_SPEED = MathUtils.degToRad(70);
 const MAX_PITCH = MathUtils.degToRad(42);
+const LOOK_DAMPING = 14;
 const WALL_MARGIN = 0.3;
 
 const head = new Vector3();
@@ -45,7 +46,7 @@ export function ThumbstickLocomotion({ originRef }: { originRef: RefObject<Group
   const slug = usePalaceStore((s) => s.currentRoomSlug);
   const { data: room } = useRoom(slug);
   const pitch = useRef(0);
-  const moving = useRef(false);
+  const motion = useRef({ yawSpeed: 0, pitchSpeed: 0, dirty: false });
 
   useFrame((state, rawDelta) => {
     const origin = originRef.current;
@@ -61,21 +62,26 @@ export function ThumbstickLocomotion({ originRef }: { originRef: RefObject<Group
     const rightStick = rightCtrl?.gamepad?.["xr-standard-thumbstick"];
     const rx = deadzoned(rightStick?.xAxis ?? 0, LOOK_DEADZONE);
     const ry = deadzoned(rightStick?.yAxis ?? 0, LOOK_DEADZONE);
+    const m = motion.current;
+    m.yawSpeed = MathUtils.damp(m.yawSpeed, -rx * TURN_SPEED, LOOK_DAMPING, dt);
+    m.pitchSpeed = MathUtils.damp(m.pitchSpeed, -ry * PITCH_SPEED, LOOK_DAMPING, dt);
 
     // Rotate the whole XR origin around the center of the head, never either eye camera.
-    rotateAround(origin, head, UP, -rx * TURN_SPEED * dt);
-    const nextPitch = MathUtils.clamp(pitch.current - ry * PITCH_SPEED * dt, -MAX_PITCH, MAX_PITCH);
+    const yawChange = m.yawSpeed * dt;
+    rotateAround(origin, head, UP, yawChange);
+    const nextPitch = MathUtils.clamp(pitch.current + m.pitchSpeed * dt, -MAX_PITCH, MAX_PITCH);
     const pitchChange = nextPitch - pitch.current;
     if (Math.abs(pitchChange) > 1e-5) {
-      state.camera.getWorldQuaternion(headQuaternion);
-      rotationAxis.set(1, 0, 0).applyQuaternion(headQuaternion);
-      rotationAxis.y = 0;
+      state.camera.getWorldDirection(fwd);
+      fwd.y = 0;
+      rotationAxis.crossVectors(fwd.normalize(), UP);
       if (rotationAxis.lengthSq() > 1e-6) {
         rotationAxis.normalize();
         rotateAround(origin, head, rotationAxis, pitchChange);
         pitch.current = nextPitch;
       }
     }
+    if (Math.abs(yawChange) > 1e-5 || Math.abs(pitchChange) > 1e-5) m.dirty = true;
 
     // Smooth move relative to the head's horizontal facing.
     // Read raw axes from the live XR session (most reliable across devices).
@@ -101,8 +107,11 @@ export function ThumbstickLocomotion({ originRef }: { originRef: RefObject<Group
     }
 
     if (!isMoving) {
-      if (moving.current) usePalaceStore.getState().setPlayerPosition(origin.position);
-      moving.current = false;
+      const lookSettled = Math.abs(m.yawSpeed) < 0.001 && Math.abs(m.pitchSpeed) < 0.001;
+      if (m.dirty && lookSettled) {
+        usePalaceStore.getState().setPlayerPosition(origin.position);
+        m.dirty = false;
+      }
       return;
     }
     // Clamp so the HEAD stays inside the floor bounds (origin offset = head offset).
@@ -111,7 +120,7 @@ export function ThumbstickLocomotion({ originRef }: { originRef: RefObject<Group
     next.x = Math.min(halfW, Math.max(-halfW, next.x + offX)) - offX;
     next.z = Math.min(halfD, Math.max(-halfD, next.z + offZ)) - offZ;
     origin.position.copy(next);
-    moving.current = true;
+    m.dirty = true;
   });
 
   return null;
