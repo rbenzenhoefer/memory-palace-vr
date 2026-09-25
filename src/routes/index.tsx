@@ -34,7 +34,7 @@ function Index() {
       <div className="pointer-events-none fixed left-6 top-6 z-10">
         <h1 className="text-lg font-semibold text-foreground">Memory Palace VR</h1>
         <p className="text-xs text-muted-foreground">
-          Drag to look around, click the cube, or enter VR.
+          Drag to look around, click objects and portals, or enter VR.
         </p>
       </div>
     </main>
