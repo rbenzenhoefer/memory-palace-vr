@@ -69,6 +69,34 @@ export function heldOverBelt() {
 }
 
 const raycaster = new Raycaster();
+const DOWN = new Vector3(0, -1, 0);
+
+function excluded(o: Object3D | null): boolean {
+  for (let p = o; p; p = p.parent) {
+    if (!p.visible || p.userData['noDrop'] || p === grab.held || p === grab.belt) return true;
+  }
+  return false;
+}
+
+/** Highest upward-facing solid surface below `origin` (floor, furniture, shelves, other objects). */
+export function findSurfaceBelow(scene: Scene, origin: Vector3): Vector3 | null {
+  raycaster.set(origin, DOWN);
+  raycaster.far = 6;
+  for (const hit of raycaster.intersectObjects(scene.children, true)) {
+    const o = hit.object;
+    if (excluded(o)) continue;
+    const isSurface = !!o.userData['dropSurface'];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mat = (o as any).material;
+    if (!isSurface && mat && !Array.isArray(mat) && mat.transparent && mat.opacity < 0.1) continue;
+    if (hit.face) {
+      const n = hit.face.normal.clone().transformDirection(o.matrixWorld);
+      if (Math.abs(n.y) < 0.5) continue; // walls, panels, signs
+    }
+    return hit.point.clone();
+  }
+  return null;
+}
 
 /** Release the held object: stow on belt, drop on the surface below, or return it. */
 export function releaseHeld(scene: Scene, client?: { x: number; y: number }) {
@@ -81,13 +109,21 @@ export function releaseHeld(scene: Scene, client?: { x: number; y: number }) {
   }
   if (!grab.held) return store.cancelHold();
   const origin = grab.held.getWorldPosition(new Vector3()).add(new Vector3(0, 0.05, 0));
-  const surfaces: Object3D[] = [];
-  scene.traverse((o) => {
-    if (o.userData['dropSurface']) surfaces.push(o);
-  });
-  raycaster.set(origin, new Vector3(0, -1, 0));
-  const hit = raycaster.intersectObjects(surfaces, false)[0];
+  const hit = findSurfaceBelow(scene, origin);
   if (!hit) return store.cancelHold();
   const yaw = new Euler().setFromQuaternion(grab.held.getWorldQuaternion(new Quaternion()), "YXZ").y;
-  store.drop(store.currentRoomSlug, [hit.point.x, hit.point.y, hit.point.z], [0, yaw, 0]);
+  store.drop(store.currentRoomSlug, [hit.x, hit.y, hit.z], [0, yaw, 0]);
+}
+
+/** Minecraft-"Q": put the selected inventory item ~45 cm in front of the viewer. */
+export function dropSelectedInFront(scene: Scene, camera: Object3D) {
+  const head = camera.getWorldPosition(new Vector3());
+  const fwd = camera.getWorldDirection(new Vector3()).setY(0);
+  if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1);
+  fwd.normalize();
+  const origin = head.clone().addScaledVector(fwd, 0.45);
+  const hit = findSurfaceBelow(scene, origin) ?? new Vector3(origin.x, 0, origin.z);
+  const yaw = Math.atan2(-fwd.x, -fwd.z) + Math.PI; // face the viewer
+  const s = usePalaceStore.getState();
+  return s.dropSelectedAt(s.currentRoomSlug, [hit.x, hit.y, hit.z], [0, yaw, 0]);
 }

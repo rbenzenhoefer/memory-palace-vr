@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { ACESFilmicToneMapping, Vector3, type Group } from "three";
 
 import { ThumbstickLocomotion } from "@/components/xr/ThumbstickLocomotion";
-import { ControllerActions } from "@/components/xr/ControllerActions";
+import { ControllerActions, DesktopInventoryKeys } from "@/components/xr/ControllerActions";
 import { useStore } from "zustand";
 
 import { RoomRenderer } from "@/components/palace/RoomRenderer";
@@ -75,11 +75,13 @@ function SceneContent() {
         <Lightformer intensity={0.6} color="#8bb" position={[-5, 1, -1]} rotation-y={Math.PI / 2} scale={[20, 1, 1]} />
       </Environment>
       <XROrigin ref={originRef} position={playerPosition}>{inSession && <InventoryBelt />}</XROrigin>
-      {inSession && (
+      {inSession ? (
         <>
           <ThumbstickLocomotion originRef={originRef} />
           <ControllerActions />
         </>
+      ) : (
+        <DesktopInventoryKeys />
       )}
       <CurrentRoom />
       <HeldObject />
