@@ -9,11 +9,10 @@ export function ControllerActions() {
 
   useXRControllerButtonEvent(left, "y-button", (state) => {
     if (state !== "pressed") return;
-    const id = grab.hoveredPortable;
-    if (!id) return;
-    const store = usePalaceStore.getState();
-    const locus = store.carriedSpecs[id];
+    const locus = grab.hoveredPortable;
     if (!locus) return;
+    const store = usePalaceStore.getState();
+    const id = locus.id;
     if (store.heldLocusId === id) {
       store.stow(id);
       grab.active = null;

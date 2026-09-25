@@ -166,11 +166,11 @@ export function Locus({
         onPointerOver: (e: ThreeEvent<PointerEvent>) => {
           e.stopPropagation();
           setHovered(true);
-          grab.hoveredPortable = locus.id;
+          grab.hoveredPortable = locus;
         },
         onPointerOut: () => {
           setHovered(false);
-          if (grab.hoveredPortable === locus.id) grab.hoveredPortable = null;
+          if (grab.hoveredPortable?.id === locus.id) grab.hoveredPortable = null;
         },
       }
     : { onClick: onClickStatic };

@@ -2,6 +2,7 @@
 import { Euler, Object3D, Quaternion, Ray, Raycaster, Vector3, type Scene } from "three";
 
 import { usePalaceStore } from "@/state/palaceStore";
+import type { LocusSpec } from "@/lib/palace/types";
 
 export interface ActiveGrab {
   pointerId: number;
@@ -19,7 +20,7 @@ export const grab: {
   active: ActiveGrab | null;
   held: Object3D | null;
   belt: Object3D | null;
-  hoveredPortable: string | null;
+  hoveredPortable: LocusSpec | null;
 } = { active: null, held: null, belt: null, hoveredPortable: null };
 
 const FORWARD = new Vector3(0, 0, -1);
@@ -38,7 +39,7 @@ export function beginGrab(opts: {
   handPosition?: Vector3;
   handQuaternion?: Quaternion;
 }) {
-  const rq = rayQuaternion(opts.ray, tmpQ);
+  const rq = opts.handQuaternion ?? rayQuaternion(opts.ray, tmpQ);
   grab.active = {
     pointerId: opts.pointerId,
     ray: opts.ray.clone(),
