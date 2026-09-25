@@ -12,4 +12,29 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // Keep a single copy of react/three across r3f, drei and xr — duplicates crash the Canvas
+    // with "resolveDispatcher().useMemo of null".
+    resolve: {
+      dedupe: [
+        "react",
+        "react-dom",
+        "three",
+        "@react-three/fiber",
+        "@react-three/drei",
+        "@react-three/xr",
+      ],
+    },
+    optimizeDeps: {
+      include: [
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "three",
+        "@react-three/fiber",
+        "@react-three/drei",
+        "@react-three/xr",
+      ],
+    },
+  },
 });
