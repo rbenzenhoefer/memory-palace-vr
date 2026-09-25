@@ -16,7 +16,11 @@ export function TestCube() {
       }}
     >
       <boxGeometry args={[0.5, 0.5, 0.5]} />
-      <meshStandardMaterial color={COLORS[index]} roughness={0.35} metalness={0.15} />
+      <meshStandardMaterial
+        color={COLORS[index % COLORS.length]!}
+        roughness={0.35}
+        metalness={0.15}
+      />
     </mesh>
   );
 }
