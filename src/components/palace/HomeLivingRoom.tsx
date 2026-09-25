@@ -236,11 +236,11 @@ function WindowView() {
         <planeGeometry args={[4.9, 2.75]} />
         <meshBasicMaterial color={PALETTE.sky} />
       </mesh>
-      <mesh position={[0, -0.72, 0.035]}>
+      <mesh position={[0, -0.72, 0.065]}>
         <planeGeometry args={[4.75, 1.18]} />
         <meshBasicMaterial color={PALETTE.fieldLight} />
       </mesh>
-      <mesh position={[0.3, -1.03, 0.025]} rotation-z={-0.05}>
+      <mesh position={[0.3, -1.03, 0.075]} rotation-z={-0.05}>
         <planeGeometry args={[5.1, 0.48]} />
         <meshBasicMaterial color={PALETTE.field} />
       </mesh>
