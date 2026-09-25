@@ -95,6 +95,7 @@ export type Database = {
         Row: {
           asset_id: string | null
           id: string
+          is_portable: boolean
           label: string
           order_index: number
           position: Json
@@ -106,6 +107,7 @@ export type Database = {
         Insert: {
           asset_id?: string | null
           id?: string
+          is_portable?: boolean
           label: string
           order_index?: number
           position?: Json
@@ -117,6 +119,7 @@ export type Database = {
         Update: {
           asset_id?: string | null
           id?: string
+          is_portable?: boolean
           label?: string
           order_index?: number
           position?: Json

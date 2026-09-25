@@ -6,6 +6,8 @@ import { Vector3 } from "three";
 import { useStore } from "zustand";
 
 import { RoomRenderer } from "@/components/palace/RoomRenderer";
+import { HeldObject } from "@/components/palace/HeldObject";
+import { InventoryBelt } from "@/components/palace/InventoryBelt";
 import { ScreenFade } from "@/components/palace/ScreenFade";
 import { useRoom } from "@/hooks/useRoom";
 import { usePalaceStore } from "@/state/palaceStore";
@@ -38,14 +40,16 @@ function CurrentRoom() {
 
 function SceneContent() {
   const playerPosition = usePalaceStore((s) => s.playerPosition);
+  const inSession = useStore(xrStore, (s) => s.session != null);
   return (
     <>
       <Environment>
         <Lightformer intensity={1.2} position={[0, 5, 0]} scale={[10, 10, 1]} />
         <Lightformer intensity={0.6} color="#8bb" position={[-5, 1, -1]} rotation-y={Math.PI / 2} scale={[20, 1, 1]} />
       </Environment>
-      <XROrigin position={playerPosition} />
+      <XROrigin position={playerPosition}>{inSession && <InventoryBelt />}</XROrigin>
       <CurrentRoom />
+      <HeldObject />
       <ScreenFade />
     </>
   );
@@ -53,8 +57,9 @@ function SceneContent() {
 
 function DesktopControls() {
   const inSession = useStore(xrStore, (s) => s.session != null);
+  const holding = usePalaceStore((s) => s.heldLocusId != null);
   if (inSession) return null;
-  return <OrbitControls target={[0, 1.6, 0]} makeDefault />;
+  return <OrbitControls target={[0, 1.6, 0]} makeDefault enabled={!holding} />;
 }
 
 /** Single, always-mounted XR canvas for the whole app. */

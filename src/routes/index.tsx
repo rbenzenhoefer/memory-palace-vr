@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { InventoryBar } from "@/components/palace/InventoryBar";
 import { EnterVRButton } from "@/components/xr/EnterVRButton";
 import { XRScene } from "@/components/xr/XRScene";
 
@@ -31,10 +32,11 @@ function Index() {
     <main className="fixed inset-0 bg-background">
       <XRScene />
       <EnterVRButton />
+      <InventoryBar />
       <div className="pointer-events-none fixed left-6 top-6 z-10">
         <h1 className="text-lg font-semibold text-foreground">Memory Palace VR</h1>
         <p className="text-xs text-muted-foreground">
-          Drag to look around, click objects and portals, or enter VR.
+          Ziehen zum Umsehen, Objekte gedrückt halten zum Aufheben, Portale anklicken oder VR starten.
         </p>
       </div>
     </main>
