@@ -102,3 +102,8 @@ export const usePalaceStore = create<PalaceState>((set, get) => ({
     set({ inventory, heldLocusId: locusId });
   },
 }));
+
+// Dev-only handle for automated browser checks.
+if (import.meta.env.DEV && typeof window !== "undefined") {
+  (window as unknown as { __palace: typeof usePalaceStore }).__palace = usePalaceStore;
+}
